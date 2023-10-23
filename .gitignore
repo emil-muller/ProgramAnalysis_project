@@ -1,0 +1,7 @@
+*__pycache__*
+.env*
+renders/
+build
+vendor
+*log.txt*
+
