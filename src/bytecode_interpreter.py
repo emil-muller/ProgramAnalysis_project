@@ -1,5 +1,4 @@
 from datetime import datetime
-import os
 import utils
 
 LOCAL = 0
@@ -81,7 +80,7 @@ class Interpreter:
 
     def op_return(self, b):
         # Note we should perhaps use the class pop function
-        # but the slides contains errors so I'm not sure
+        # but the slides contains errors, so I'm not sure
         print(f"op_return called on {b}")
         if len(self.stack) == 1:
             (l, s, pc, invoker) = self.stack.pop()
@@ -200,7 +199,7 @@ class Interpreter:
         except IndexError:
             # If index not in locals, append variable
             # This might be dangerous if program assumes you can push
-            # to abitrary indexes
+            # to arbitrary indexes
             self.stack[-1][LOCAL].append(v_1)
         self.stack[-1][PC] += 1
         return b
@@ -212,14 +211,14 @@ class Interpreter:
             self.stack[-1][PC] += 1
         except IndexError:
             # If index not in locals we can't increment, so we run nop
-            self.op_nop()
+            self.op_nop(b)
         return b
 
     def op_push(self, b):
         print(f"op_push called on {b}")
         # Only care about integers
         if b["value"]["type"] != "integer":
-            self.op_nop()
+            self.op_nop(b)
             return b
         self.stack[-1][OPERANDSTACK].append(b["value"]["value"])
         self.stack[-1][PC] += 1
@@ -240,7 +239,7 @@ class Interpreter:
     def op_array_load(self, b):
         print(f"op_array_load called on {b}")
         if b["type"] != "int":
-            self.op_nop()
+            self.op_nop(b)
             return b
         i = self.stack[-1][OPERANDSTACK].pop()
         if i < 0:
@@ -266,7 +265,7 @@ class Interpreter:
         print(f"op_arraylength called on {b}")
         # Only handle statics
         if not b["static"]:
-            self.op_nop()
+            self.op_nop(b)
             return b
 
         class_name = b["field"]["class"]
@@ -295,7 +294,7 @@ class Interpreter:
         self.stack[-1][OPERANDSTACK].append(len(self.memory) + 1)
 
         # Technically not necessary to initialize array in python
-        # but it makes the code more clear
+        # , but it makes the code more clear
         self.memory[self.stack[-1][OPERANDSTACK][-1]] = [0 for _ in range(size)]
 
         self.stack[-1][PC] += 1
@@ -315,7 +314,7 @@ class Interpreter:
     def op_invoke(self, b):
         # We should also try to handle virtual access at some point
         if b["access"] != "static":
-            self.op_nop()
+            self.op_nop(b)
             return b
 
         n = len(b["method"]["args"])
