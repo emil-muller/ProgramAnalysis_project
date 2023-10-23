@@ -430,3 +430,24 @@ def test_aWierdOneOutOfBounds():
     test = Interpreter(program, False)
     with pytest.raises(IndexError) as e:
         test.run(state)
+
+
+def test_factorial():
+    class_obj = utils.load_class(f"../decompiled/Simple.json")
+    program = utils.load_method("factorial", class_obj)
+
+    state = [[5], [], 0, None]  # local variables  # stackframes  # program counter
+    test = Interpreter(program, True)
+    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.run(state)
+    assert test.program_return == 120
+
+    class_obj = utils.load_class(f"../decompiled/Simple.json")
+    program = utils.load_method("factorial", class_obj)
+
+    state = [[6], [], 0, None]  # local variables  # stackframes  # program counter
+    test = Interpreter(program, True)
+    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.run(state)
+
+    assert test.program_return == 720
