@@ -432,22 +432,33 @@ def test_aWierdOneOutOfBounds():
         test.run(state)
 
 
-def test_factorial():
-    class_obj = utils.load_class(f"../decompiled/Simple.json")
-    program = utils.load_method("factorial", class_obj)
+def test_fib():
+    # There's a bug in the test decompilation so it always return 1
+    class_obj = utils.load_class(f"../decompiled/Calls.json")
+    program = utils.load_method("fib", class_obj)
 
     state = [[5], [], 0, None]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
     test.memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
-    assert test.program_return == 120
+    assert test.program_return == 5
 
-    class_obj = utils.load_class(f"../decompiled/Simple.json")
-    program = utils.load_method("factorial", class_obj)
+    class_obj = utils.load_class(f"../decompiled/Calls.json")
+    program = utils.load_method("fib", class_obj)
 
     state = [[6], [], 0, None]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
     test.memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
 
-    assert test.program_return == 720
+    assert test.program_return == 8
+
+    class_obj = utils.load_class(f"../decompiled/Calls.json")
+    program = utils.load_method("fib", class_obj)
+
+    state = [[7], [], 0, None]  # local variables  # stackframes  # program counter
+    test = Interpreter(program, True)
+    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.run(state)
+
+    assert test.program_return == 13

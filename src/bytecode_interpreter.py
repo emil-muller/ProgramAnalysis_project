@@ -340,8 +340,8 @@ class Interpreter:
 
 
 if __name__ == "__main__":
-    class_obj = utils.load_class(f"../decompiled/Simple.json")
-    program = utils.load_method("factorial", class_obj)
+    class_obj = utils.load_class(f"../decompiled/Calls.json")
+    program = utils.load_method("fib", class_obj)
 
     state = [[5], [], 0, None]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)

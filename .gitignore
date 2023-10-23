@@ -4,4 +4,5 @@ renders/
 build
 vendor
 *log.txt*
+.idea
 
