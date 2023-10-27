@@ -1,5 +1,6 @@
 from datetime import datetime
 import utils
+import java_mock
 
 LOCAL = 0
 OPERANDSTACK = 1
@@ -54,7 +55,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack[-1])
+        print(self.stack)
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -62,6 +63,11 @@ class Interpreter:
         else:
             print(f"Couldn't find attr op_{b['opr']}")
             return False
+
+    def load_program_into_memory(self, program):
+        for p in program:
+            class_name = p["name"]
+            self.memory[class_name] = p
 
     def pop(self, b):
         (l, s, pc) = self.stack.pop()
@@ -92,7 +98,7 @@ class Interpreter:
             (l, s, pc, invoker) = self.stack.pop()
             if len(s) > 0:
                 self.stack[-1][OPERANDSTACK].append(s[-1])
-            method = utils.load_method(invoker[0], self.memory[invoker[1]])
+            self.program = utils.load_method(self.stack[-1][INVOKEDBY][0], self.memory[self.stack[-1][INVOKEDBY][1]])
         return b
 
     def op_nop(self, b):
@@ -102,8 +108,8 @@ class Interpreter:
 
     def op_load(self, b):
         print(f"op_load called on {b}")
-        if b["type"] != "int" and b["type"] != "ref":
-            return self.op_nop(b)
+        #if b["type"] != "int" and b["type"] != "ref":
+        #    return self.op_nop(b)
         v = self.stack[-1][LOCAL][b["index"]]
         self.stack[-1][OPERANDSTACK].append(v)
         self.stack[-1][PC] += 1
@@ -113,8 +119,8 @@ class Interpreter:
         print(f"op_add called on {b}")
 
         # We only care about ints
-        if b["type"] != "int":
-            return self.op_nop(b)
+        #if b["type"] != "int":
+        #    return self.op_nop(b)
 
         # Grab last two values of stack
         v_2 = self.stack[-1][OPERANDSTACK].pop()
@@ -131,6 +137,10 @@ class Interpreter:
         elif b["operant"] == "sub":
             self.stack[-1][OPERANDSTACK].append(
                 v_1 - v_2
+            )  # Subtract values and push the to stack
+        elif b["operant"] == "div":
+            self.stack[-1][OPERANDSTACK].append(
+                v_1 / v_2
             )  # Subtract values and push the to stack
         else:
             return self.op_nop(b)
@@ -188,10 +198,23 @@ class Interpreter:
     def op_store(self, b):
         print(f"op_store called on {b}")
 
-        if b["type"] != "int" and b["type"] != "ref":
-            return self.op_nop(b)
+        #if b["type"] != "int" and b["type"] != "ref":
+        #    return self.op_nop(b)
 
         v_1 = self.stack[-1][OPERANDSTACK].pop()
+
+        if b["type"] == "double":
+            try:
+                self.stack[-1][LOCAL][b["index"]] = v_1
+                self.stack[-1][LOCAL][b["index"]+1] = v_1
+            except IndexError:
+                # If index not in locals, append variable
+                # This might be dangerous if program assumes you can push
+                # to arbitrary indexes
+                self.stack[-1][LOCAL].append(v_1)
+                self.stack[-1][LOCAL].append(v_1)
+                self.stack[-1][PC] += 1
+            return b
 
         # Push value from stack to local variable at given index
         try:
@@ -217,9 +240,9 @@ class Interpreter:
     def op_push(self, b):
         print(f"op_push called on {b}")
         # Only care about integers
-        if b["value"]["type"] != "integer":
-            self.op_nop(b)
-            return b
+        #if b["value"]["type"] != "integer":
+        #    self.op_nop(b)
+        #    return b
         self.stack[-1][OPERANDSTACK].append(b["value"]["value"])
         self.stack[-1][PC] += 1
         return b
@@ -238,9 +261,9 @@ class Interpreter:
 
     def op_array_load(self, b):
         print(f"op_array_load called on {b}")
-        if b["type"] != "int":
-            self.op_nop(b)
-            return b
+        #if b["type"] != "int":
+        #    self.op_nop(b)
+        #    return b
         i = self.stack[-1][OPERANDSTACK].pop()
         if i < 0:
             raise Exception("Tried to access negative array index")
@@ -262,7 +285,7 @@ class Interpreter:
         return b
 
     def op_get(self, b):
-        print(f"op_arraylength called on {b}")
+        print(f"op_get called on {b}")
         # Only handle statics
         if not b["static"]:
             self.op_nop(b)
@@ -270,6 +293,12 @@ class Interpreter:
 
         class_name = b["field"]["class"]
         val_name = b["field"]["name"]
+
+        # Don't handle system calls yet
+        if class_name == "java/lang/System":
+            self.op_nop(b)
+            return b
+
         val = self.memory[class_name][val_name]
         self.stack[-1][OPERANDSTACK].append(val)
 
@@ -312,17 +341,24 @@ class Interpreter:
         return b
 
     def op_invoke(self, b):
+        print(f"op_invoke called on {b}")
+
         # We should also try to handle virtual access at some point
-        if b["access"] != "static":
-            self.op_nop(b)
-            return b
+        #if b["access"] != "static":
+        #    self.op_nop(b)
+        #    return b
 
         n = len(b["method"]["args"])
 
         # God forgive me for this sin
-        method = utils.load_method(
-            b["method"]["name"], self.memory[b["method"]["ref"]["name"]]
-        )
+        try:
+            method = utils.load_method(
+                b["method"]["name"], self.memory[b["method"]["ref"]["name"]]
+            )
+        except Exception as e:
+            print("Method not in memory")
+            method = None
+
         function_params = self.stack[-1][OPERANDSTACK][-n:]
         self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
         self.stack[-1][PC] += 1
@@ -334,16 +370,21 @@ class Interpreter:
             (b["method"]["name"], b["method"]["ref"]["name"]),
         ]
         self.stack.append(new_stack_frame)
-        self.program = method
+        if method:
+            self.program = method
+        else:
+            self.stack.pop()
         return b
 
 
 if __name__ == "__main__":
-    class_obj = utils.load_class(f"../decompiled/Calls.json")
-    program = utils.load_method("fib", class_obj)
+    entry_class = utils.load_class("/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1/Example.json")
+    entry_function = utils.load_method("main", entry_class)
+    program = utils.load_program("/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1")
 
-    state = [[5], [], 0, None]  # local variables  # stackframes  # program counter
-    test = Interpreter(program, True)
-    test.memory["dtu/compute/exec/Calls"] = class_obj
+
+    state = [["string_arg"], [], 0, ("main","level1/Example")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, True)
+    test.load_program_into_memory(program)
     test.run(state)
     print(test.program_return)

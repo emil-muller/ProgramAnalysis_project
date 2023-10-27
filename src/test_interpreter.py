@@ -317,7 +317,7 @@ def test_newArray():
         ],
     }
 
-    state = [[], [], 0, None]  # local variables  # stackframes  # program counter
+    state = [[], [], 0, ("main","newarray")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, False)
     test.run(state)
     assert test.program_return == 3
@@ -437,7 +437,7 @@ def test_fib():
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj)
 
-    state = [[5], [], 0, None]  # local variables  # stackframes  # program counter
+    state = [[5], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
     test.memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
@@ -446,7 +446,7 @@ def test_fib():
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj)
 
-    state = [[6], [], 0, None]  # local variables  # stackframes  # program counter
+    state = [[6], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
     test.memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
@@ -456,7 +456,7 @@ def test_fib():
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj)
 
-    state = [[7], [], 0, None]  # local variables  # stackframes  # program counter
+    state = [[7], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
     test.memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)

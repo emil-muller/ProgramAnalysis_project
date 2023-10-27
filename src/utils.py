@@ -14,11 +14,13 @@ def load_method(name, class_json):
             return method["code"]
 
 
-# Assumes all decompiled json files necesssary for the program
+# Assumes all decompiled json files necessary for the program
 # is in the same folder
 def load_program(path):
     json_files_in_path = list(
         filter(lambda file: file.endswith(".json"), os.listdir(path))
     )
-    classes = [load_class(c) for c in json_files_in_path]
+    classes_to_load = [path+"/"+file for file in json_files_in_path]
+    classes = [load_class(c) for c in classes_to_load]
+
     return classes
