@@ -9,12 +9,15 @@ INVOKEDBY = 3
 
 
 class Interpreter:
-    def __init__(self, p, verbose):  # Program, verbose: bool):
+    def __init__(self, p, verbose):
         self.program = p
         self.verbose = verbose
         self.memory = {}
         self.stack = []
         self.program_return = None
+
+        # This list contains the information needed for the sequence diagram
+        self.call_trace = []
 
     def log_start(self):
         if self.verbose:
@@ -88,6 +91,7 @@ class Interpreter:
         # Note we should perhaps use the class pop function
         # but the slides contains errors, so I'm not sure
         print(f"op_return called on {b}")
+
         if len(self.stack) == 1:
             (l, s, pc, invoker) = self.stack.pop()
             if len(s) > 0:
@@ -95,6 +99,9 @@ class Interpreter:
             else:
                 self.program_return = None
         else:
+            # Add return to calltrace
+            self.call_trace.append((self.stack[-1][INVOKEDBY], self.stack[-2][INVOKEDBY]))
+
             (l, s, pc, invoker) = self.stack.pop()
             if len(s) > 0:
                 self.stack[-1][OPERANDSTACK].append(s[-1])
@@ -108,7 +115,7 @@ class Interpreter:
 
     def op_load(self, b):
         print(f"op_load called on {b}")
-        #if b["type"] != "int" and b["type"] != "ref":
+        # if b["type"] != "int" and b["type"] != "ref":
         #    return self.op_nop(b)
         v = self.stack[-1][LOCAL][b["index"]]
         self.stack[-1][OPERANDSTACK].append(v)
@@ -119,7 +126,7 @@ class Interpreter:
         print(f"op_add called on {b}")
 
         # We only care about ints
-        #if b["type"] != "int":
+        # if b["type"] != "int":
         #    return self.op_nop(b)
 
         # Grab last two values of stack
@@ -198,15 +205,13 @@ class Interpreter:
     def op_store(self, b):
         print(f"op_store called on {b}")
 
-        #if b["type"] != "int" and b["type"] != "ref":
-        #    return self.op_nop(b)
-
         v_1 = self.stack[-1][OPERANDSTACK].pop()
 
+        # Handle doubles
         if b["type"] == "double":
             try:
                 self.stack[-1][LOCAL][b["index"]] = v_1
-                self.stack[-1][LOCAL][b["index"]+1] = v_1
+                self.stack[-1][LOCAL][b["index"] + 1] = v_1
             except IndexError:
                 # If index not in locals, append variable
                 # This might be dangerous if program assumes you can push
@@ -216,6 +221,7 @@ class Interpreter:
                 self.stack[-1][PC] += 1
             return b
 
+        # Handle integers and refs
         # Push value from stack to local variable at given index
         try:
             self.stack[-1][LOCAL][b["index"]] = v_1
@@ -239,10 +245,6 @@ class Interpreter:
 
     def op_push(self, b):
         print(f"op_push called on {b}")
-        # Only care about integers
-        #if b["value"]["type"] != "integer":
-        #    self.op_nop(b)
-        #    return b
         self.stack[-1][OPERANDSTACK].append(b["value"]["value"])
         self.stack[-1][PC] += 1
         return b
@@ -261,9 +263,6 @@ class Interpreter:
 
     def op_array_load(self, b):
         print(f"op_array_load called on {b}")
-        #if b["type"] != "int":
-        #    self.op_nop(b)
-        #    return b
         i = self.stack[-1][OPERANDSTACK].pop()
         if i < 0:
             raise Exception("Tried to access negative array index")
@@ -344,11 +343,6 @@ class Interpreter:
     def op_invoke(self, b):
         print(f"op_invoke called on {b}")
 
-        # We should also try to handle virtual access at some point
-        #if b["access"] != "static":
-        #    self.op_nop(b)
-        #    return b
-
         n = len(b["method"]["args"])
 
         function_params = self.stack[-1][OPERANDSTACK][-n:]
@@ -361,7 +355,11 @@ class Interpreter:
             0,
             (b["method"]["name"], b["method"]["ref"]["name"]),
         ]
+
         self.stack.append(new_stack_frame)
+
+        # Add call to calltrace
+        self.call_trace.append((self.stack[-2][INVOKEDBY], self.stack[-1][INVOKEDBY]))
 
         # God forgive me for this sin
         try:
@@ -383,13 +381,16 @@ class Interpreter:
 
 
 if __name__ == "__main__":
-    entry_class = utils.load_class("/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1/Example.json")
+    entry_class = utils.load_class(
+        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1/Example.json")
     entry_function = utils.load_method("main", entry_class)
-    program = utils.load_program("/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1")
+    program = utils.load_program(
+        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1")
 
-
-    state = [["string_arg"], [], 0, ("main","level1/Example")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["string_arg"], [], 0, (
+        "main", "level1/Example")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
     test.run(state)
     print(test.program_return)
+    print(test.call_trace)
