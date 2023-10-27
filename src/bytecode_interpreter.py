@@ -31,7 +31,6 @@ class Interpreter:
                 b = self.program["bytecode"][pc]
                 with open("log/log.txt", "a") as f:
                     f.write("----\n")
-                    # f.write(f"memory: \n{self.memory}\n")
                     f.write(
                         f"stack: \n\tlocals: {self.stack[-1][LOCAL]}\n\tstack: {self.stack[-1][OPERANDSTACK]}\n\trip: {self.stack[-1][PC]}\n"
                     )
@@ -115,8 +114,6 @@ class Interpreter:
 
     def op_load(self, b):
         print(f"op_load called on {b}")
-        # if b["type"] != "int" and b["type"] != "ref":
-        #    return self.op_nop(b)
         v = self.stack[-1][LOCAL][b["index"]]
         self.stack[-1][OPERANDSTACK].append(v)
         self.stack[-1][PC] += 1
@@ -124,10 +121,6 @@ class Interpreter:
 
     def op_binary(self, b):
         print(f"op_add called on {b}")
-
-        # We only care about ints
-        # if b["type"] != "int":
-        #    return self.op_nop(b)
 
         # Grab last two values of stack
         v_2 = self.stack[-1][OPERANDSTACK].pop()
