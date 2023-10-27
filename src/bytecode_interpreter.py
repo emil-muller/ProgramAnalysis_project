@@ -102,7 +102,7 @@ class Interpreter:
         return b
 
     def op_nop(self, b):
-        print(f"!!!!!op_nop called on {b}!!!!!")
+        print(f"\n!!!!!op_nop called on {b}!!!!!\n")
         self.stack[-1][PC] += 1
         return b
 
@@ -294,8 +294,9 @@ class Interpreter:
         class_name = b["field"]["class"]
         val_name = b["field"]["name"]
 
-        # Don't handle system calls yet
-        if class_name == "java/lang/System":
+        # Don't load system classes
+        # This will be handled by java_mock
+        if class_name.startswith("java/"):
             self.op_nop(b)
             return b
 
@@ -350,15 +351,6 @@ class Interpreter:
 
         n = len(b["method"]["args"])
 
-        # God forgive me for this sin
-        try:
-            method = utils.load_method(
-                b["method"]["name"], self.memory[b["method"]["ref"]["name"]]
-            )
-        except Exception as e:
-            print("Method not in memory")
-            method = None
-
         function_params = self.stack[-1][OPERANDSTACK][-n:]
         self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
         self.stack[-1][PC] += 1
@@ -370,10 +362,23 @@ class Interpreter:
             (b["method"]["name"], b["method"]["ref"]["name"]),
         ]
         self.stack.append(new_stack_frame)
+
+        # God forgive me for this sin
+        try:
+            method = utils.load_method(
+                b["method"]["name"], self.memory[b["method"]["ref"]["name"]]
+            )
+        except Exception as e:
+            print("Method not in memory, trying java mock")
+            method = None
+            if b["method"]["ref"]["name"].startswith("java/"):
+                java_mock.system_call(self, b)
+
         if method:
             self.program = method
         else:
             self.stack.pop()
+
         return b
 
 
