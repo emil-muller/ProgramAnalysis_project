@@ -6,3 +6,6 @@ INVOKEDBY = 3
 def system_call(interpreter, b):
     if interpreter.stack[-1][INVOKEDBY] == ('println','java/io/PrintStream'):
         print(interpreter.stack[-1][LOCAL])
+    else:
+        print(f"UNKNOWN SYSTEM COMMAND: {interpreter.stack[-1][INVOKEDBY]}\nEXITING...")
+        quit()
