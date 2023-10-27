@@ -101,9 +101,11 @@ class Interpreter:
             # Add return to calltrace
             self.call_trace.append((self.stack[-1][INVOKEDBY], self.stack[-2][INVOKEDBY]))
 
+            # pop stackframe and push function return value to previous stackframes operand stack
             (l, s, pc, invoker) = self.stack.pop()
             if len(s) > 0:
                 self.stack[-1][OPERANDSTACK].append(s[-1])
+            # Set program to invokee invoker and resume execution
             self.program = utils.load_method(self.stack[-1][INVOKEDBY][0], self.memory[self.stack[-1][INVOKEDBY][1]])
         return b
 
