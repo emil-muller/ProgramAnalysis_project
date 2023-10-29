@@ -238,6 +238,7 @@ class Interpreter:
             self.op_nop(b)
         return b
 
+
     def op_push(self, b):
         print(f"op_push called on {b}")
         self.stack[-1][OPERANDSTACK].append(b["value"]["value"])
@@ -367,6 +368,9 @@ class Interpreter:
             if b["method"]["ref"]["name"].startswith("java/"):
                 java_mock.system_call(self, b)
 
+        # If called method is found in interpreter memory, execute method
+        # If not, pop stackframe and continue execution of current method,
+        # with correct operand stack (assuming void function)
         if method:
             self.program = method
         else:
@@ -386,6 +390,7 @@ if __name__ == "__main__":
         "main", "level1/Example")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
+
     test.run(state)
     print(test.program_return)
     print(test.call_trace)
