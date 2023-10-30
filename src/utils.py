@@ -24,3 +24,14 @@ def load_program(path):
     classes = [load_class(c) for c in classes_to_load]
 
     return classes
+
+def to_plantuml(call_trace):
+    uml_str = "@startuml\n"
+    print(call_trace)
+    for invoker,invokee,type in call_trace:
+        if type == "invoke":
+            uml_str += f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}\n'
+        elif type == "return":
+            uml_str += f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}\n'
+    uml_str += "@enduml"
+    return uml_str

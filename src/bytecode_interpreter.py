@@ -99,7 +99,7 @@ class Interpreter:
                 self.program_return = None
         else:
             # Add return to calltrace
-            self.call_trace.append((self.stack[-1][INVOKEDBY], self.stack[-2][INVOKEDBY]))
+            self.call_trace.append((self.stack[-1][INVOKEDBY], self.stack[-2][INVOKEDBY], "return"))
 
             # pop stackframe and push function return value to previous stackframes operand stack
             (l, s, pc, invoker) = self.stack.pop()
@@ -355,7 +355,7 @@ class Interpreter:
         self.stack.append(new_stack_frame)
 
         # Add call to calltrace
-        self.call_trace.append((self.stack[-2][INVOKEDBY], self.stack[-1][INVOKEDBY]))
+        self.call_trace.append((self.stack[-2][INVOKEDBY], self.stack[-1][INVOKEDBY], "invoke"))
 
         # God forgive me for this sin
         try:
@@ -393,4 +393,4 @@ if __name__ == "__main__":
 
     test.run(state)
     print(test.program_return)
-    print(test.call_trace)
+    print(utils.to_plantuml(test.call_trace))
