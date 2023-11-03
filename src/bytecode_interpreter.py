@@ -8,7 +8,6 @@ OPERANDSTACK = 1
 PC = 2
 INVOKEDBY = 3
 
-
 class Interpreter:
     def __init__(self, p, verbose):
         self.program = p
@@ -98,7 +97,8 @@ class Interpreter:
             # Set program to invokee invoker and resume execution
             self.program = utils.load_method(
                 self.stack[-1][INVOKEDBY][0],
-                self.code_memory[self.stack[-1][INVOKEDBY][1]]
+                self.code_memory[self.stack[-1][INVOKEDBY][1]],
+                self.stack[-1][INVOKEDBY][2]
             )
         return b
 
@@ -357,7 +357,7 @@ class Interpreter:
             function_params,
             [],
             0,
-            (b["method"]["name"], b["method"]["ref"]["name"]),
+            (b["method"]["name"], b["method"]["ref"]["name"], b["method"]["args"]),
         ]
 
         self.stack.append(new_stack_frame)
@@ -368,7 +368,7 @@ class Interpreter:
         # God forgive me for this sin
         try:
             method = utils.load_method(
-                b["method"]["name"], self.code_memory[b["method"]["ref"]["name"]]
+                b["method"]["name"], self.code_memory[b["method"]["ref"]["name"]], b["method"]["args"]
             )
         except KeyError as e:
             print("Method not in memory, trying java mock")
@@ -390,12 +390,12 @@ class Interpreter:
 if __name__ == "__main__":
     entry_class = utils.load_class(
         "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("InvokeMethod", entry_class)
+    entry_function = utils.load_method("CreateClassInstanceParameter", entry_class,["int"])
     program = utils.load_program(
         "../TestPrograms/ClassInstances/out/production/ClassInstances")
 
-    state = [["Test"], [], 0, (
-        "InvokeMethod", "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["Test", 123], [], 0, (
+        "CreateClassInstanceParameter", "Main", ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
 
