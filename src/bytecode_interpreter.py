@@ -255,6 +255,8 @@ class Interpreter:
         return b
 
     def op_goto(self, b):
+        # Note this only works for gotos within the routine
+        # Currently we can't jump out of the function // assuming that's at all possible in jvm bytecode
         print(f"op_goto called on {b}")
         self.stack[-1][PC] = b["target"]
         return b
@@ -336,11 +338,12 @@ class Interpreter:
         size = self.stack[-1][OPERANDSTACK].pop()
 
         # Create object reference and push to stack
-        self.stack[-1][OPERANDSTACK].append(len(self.memory) + 1)
+        objref = f'Array_{uuid.uuid4()}'
+        self.stack[-1][OPERANDSTACK].append(objref)
 
         # Technically not necessary to initialize array in python
         # , but it makes the code more clear
-        self.memory[self.stack[-1][OPERANDSTACK][-1]] = [0 for _ in range(size)]
+        self.memory[objref] = [0 for _ in range(size)]
 
         self.stack[-1][PC] += 1
         return b
