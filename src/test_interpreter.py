@@ -462,3 +462,27 @@ def test_fib():
     test.run(state)
 
     assert test.program_return == 13
+
+
+def test_class_init():
+    entry_class = utils.load_class(
+        "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
+    entry_function = utils.load_method("CreateClassInstance", entry_class)
+    program = utils.load_program(
+        "../TestPrograms/ClassInstances/out/production/ClassInstances")
+
+    state = [[], [], 0, (
+        "CreateClassInstance",
+        "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, True)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    print(test.memory)
+    objs = list(test.memory.keys())
+    assert len(objs) == 1
+    objref = objs[0]
+    assert "PublicProperty" in test.memory[objref]
+    assert "PrivateProperty" in test.memory[objref]
+    assert test.memory[objref]["PublicProperty"] == 1
+    assert test.memory[objref]["PrivateProperty"] == 2
