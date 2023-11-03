@@ -1,4 +1,5 @@
 import random
+import uuid
 import pytest
 import utils
 from bytecode_interpreter import Interpreter
@@ -176,7 +177,7 @@ def test_first():
         ],
     }
     # Generate random array reference
-    arr_ref = random.randint(1, 1000)
+    arr_ref = arr_ref = f"Array_{uuid.uuid4()}"
     state = [
         [arr_ref],
         [],
@@ -192,70 +193,7 @@ def test_first():
     assert test.program_return == test.memory[arr_ref][0]
 
 
-def test_firstSafe():
-    # Once we handle invoke, we should add bad path to this test
-    program = {
-        "max_stack": 2,
-        "max_locals": 1,
-        "exceptions": [],
-        "stack_map": [{"index": 10, "type": "same"}],
-        "bytecode": [
-            {
-                "offset": 0,
-                "opr": "get",
-                "static": True,
-                "field": {
-                    "class": "dtu/compute/exec/Array",
-                    "name": "$assertionsDisabled",
-                    "type": "boolean",
-                },
-            },
-            {"offset": 3, "opr": "ifz", "condition": "ne", "target": 10},
-            {"offset": 6, "opr": "load", "type": "ref", "index": 0},
-            {"offset": 7, "opr": "arraylength"},
-            {"offset": 8, "opr": "push", "value": {"type": "integer", "value": 1}},
-            {"offset": 9, "opr": "if", "condition": "ge", "target": 10},
-            {"offset": 12, "opr": "new", "class": "java/lang/AssertionError"},
-            {"offset": 15, "opr": "dup", "words": 1},
-            {
-                "offset": 16,
-                "opr": "invoke",
-                "access": "special",
-                "method": {
-                    "is_interface": False,
-                    "ref": {"kind": "class", "name": "java/lang/AssertionError"},
-                    "name": "<init>",
-                    "args": [],
-                    "returns": None,
-                },
-            },
-            {"offset": 19, "opr": "throw"},
-            {"offset": 20, "opr": "load", "type": "ref", "index": 0},
-            {"offset": 21, "opr": "push", "value": {"type": "integer", "value": 0}},
-            {"offset": 22, "opr": "array_load", "type": "int"},
-            {"offset": 23, "opr": "return", "type": "int"},
-        ],
-    }
-    # Generate random array reference
-    arr_ref = random.randint(1, 1000)
-    state = [
-        [arr_ref],
-        [],
-        0,
-        None,
-    ]  # local variables  # stackframes  # program counter
-    test = Interpreter(program, False)
-    # Generate random array in memory
-    test.memory[arr_ref] = [
-        random.randint(1, 100) for _ in range(random.randint(1, 20))
-    ]
-    # Add class static to memory
-    test.memory["dtu/compute/exec/Array"] = {"$assertionsDisabled": 1}
-    test.run(state)
-    assert test.program_return == test.memory[arr_ref][0]
-
-
-def test_firstSafe():
+def test_access():
     # Once we handle invoke, we should add bad path to this test
     program = {
         "max_stack": 2,
@@ -270,7 +208,7 @@ def test_firstSafe():
         ],
     }
     # Generate random array reference
-    arr_ref = random.randint(1, 1000)
+    arr_ref = f"Array_{uuid.uuid4()}"
     test = Interpreter(program, False)
     # Generate random array in memory
     test.memory[arr_ref] = [

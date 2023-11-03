@@ -76,21 +76,6 @@ class Interpreter:
             class_name = p["name"]
             self.code_memory[class_name] = p
 
-    def pop(self, b):
-        (l, s, pc) = self.stack.pop()
-        # Rule (pop_1)
-        if b["words"] == 1:
-            if len(s) < 1:
-                return False
-            self.stack.append((l, s[:-1], pc + 1))
-        # Rule (pop_2)
-        elif b["words"] == 2:
-            if len(s) < 2:
-                return False
-            self.stack.append((l, s[:-2], pc + 1))
-        else:
-            return False
-
     def op_return(self, b):
         # Note we should perhaps use the class pop function
         # but the slides contains errors, so I'm not sure
@@ -305,20 +290,10 @@ class Interpreter:
 
     def op_get(self, b):
         print(f"op_get called on {b}")
-        """
         if b["static"]:
-            class_name = b["field"]["class"]
-            val_name = b["field"]["name"]
-    
-            # Don't load system classes
-            # This will be handled by java_mock
-            if class_name.startswith("java/"):
-                self.op_nop(b)
-                return b
-    
-            val = self.memory[class_name][val_name]
-            self.stack[-1][OPERANDSTACK].append(val)
-        """
+            self.op_nop(b)
+            return b
+
         objref = self.stack[-1][OPERANDSTACK].pop()
         val = self.memory[objref][b["field"]["name"]]
         self.stack[-1][OPERANDSTACK].append(val)
