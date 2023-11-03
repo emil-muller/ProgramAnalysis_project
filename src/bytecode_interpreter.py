@@ -34,7 +34,10 @@ class Interpreter:
                 with open("log/log.txt", "a") as f:
                     f.write("----\n")
                     f.write(
-                        f"stack: \n\tlocals: {self.stack[-1][LOCAL]}\n\tstack: {self.stack[-1][OPERANDSTACK]}\n\trip: {self.stack[-1][PC]}\n"
+                        f"stack: \n\t" +
+                        f"locals: {self.stack[-1][LOCAL]}\n\t" +
+                        f"operandstack: {self.stack[-1][OPERANDSTACK]}\n\t" +
+                        f"rip: {self.stack[-1][PC]}\n"
                     )
                     f.write(f"bytecode: \n{b}\n")
                     f.write(f"stackframes:\n {self.stack}\n")
@@ -68,8 +71,8 @@ class Interpreter:
             print(f"Couldn't find attr op_{b['opr']}")
             return False
 
-    def load_program_into_memory(self, program):
-        for p in program:
+    def load_program_into_memory(self, prog):
+        for p in prog:
             class_name = p["name"]
             self.code_memory[class_name] = p
 
@@ -108,7 +111,10 @@ class Interpreter:
             if len(s) > 0:
                 self.stack[-1][OPERANDSTACK].append(s[-1])
             # Set program to invokee invoker and resume execution
-            self.program = utils.load_method(self.stack[-1][INVOKEDBY][0], self.code_memory[self.stack[-1][INVOKEDBY][1]])
+            self.program = utils.load_method(
+                self.stack[-1][INVOKEDBY][0],
+                self.code_memory[self.stack[-1][INVOKEDBY][1]]
+            )
         return b
 
     def op_nop(self, b):
@@ -240,7 +246,6 @@ class Interpreter:
             self.op_nop(b)
         return b
 
-
     def op_push(self, b):
         print(f"op_push called on {b}")
         self.stack[-1][OPERANDSTACK].append(b["value"]["value"])
@@ -287,7 +292,7 @@ class Interpreter:
         print(f"op_put called on {b}")
         # Don't handle static puts
         if b["static"]:
-            self.op_nop()
+            self.op_nop(b)
             return b
 
         val = self.stack[-1][OPERANDSTACK].pop()
@@ -298,26 +303,25 @@ class Interpreter:
         self.stack[-1][PC] += 1
         return b
 
-
     def op_get(self, b):
         print(f"op_get called on {b}")
-        # Only handle statics
-        if not b["static"]:
-            self.op_nop(b)
-            return b
-
-        class_name = b["field"]["class"]
-        val_name = b["field"]["name"]
-
-        # Don't load system classes
-        # This will be handled by java_mock
-        if class_name.startswith("java/"):
-            self.op_nop(b)
-            return b
-
-        val = self.memory[class_name][val_name]
+        """
+        if b["static"]:
+            class_name = b["field"]["class"]
+            val_name = b["field"]["name"]
+    
+            # Don't load system classes
+            # This will be handled by java_mock
+            if class_name.startswith("java/"):
+                self.op_nop(b)
+                return b
+    
+            val = self.memory[class_name][val_name]
+            self.stack[-1][OPERANDSTACK].append(val)
+        """
+        objref = self.stack[-1][OPERANDSTACK].pop()
+        val = self.memory[objref][b["field"]["name"]]
         self.stack[-1][OPERANDSTACK].append(val)
-
         self.stack[-1][PC] += 1
         return b
 
@@ -362,10 +366,12 @@ class Interpreter:
     def op_invoke(self, b):
         print(f"op_invoke called on {b}")
 
-        if b["access"] == "special":
+        # Add objectref at "argument" to function
+        if b["access"] in ["virtual", "interface", "special"]:
             n = 1
         else:
             n = 0
+
         n += len(b["method"]["args"])
 
         function_params = self.stack[-1][OPERANDSTACK][-n:]
@@ -389,7 +395,7 @@ class Interpreter:
             method = utils.load_method(
                 b["method"]["name"], self.code_memory[b["method"]["ref"]["name"]]
             )
-        except Exception as e:
+        except KeyError as e:
             print("Method not in memory, trying java mock")
             method = None
             if b["method"]["ref"]["name"].startswith("java/"):
@@ -408,13 +414,13 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("CreateClassInstance", entry_class)
+        "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
+    entry_function = utils.load_method("InvokeMethod", entry_class)
     program = utils.load_program(
-        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/ClassInstances/out/production/ClassInstances")
+        "../TestPrograms/ClassInstances/out/production/ClassInstances")
 
-    state = [[], [], 0, (
-        "CreateClassInstance", "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["Test"], [], 0, (
+        "InvokeMethod", "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
 

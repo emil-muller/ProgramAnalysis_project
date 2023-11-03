@@ -486,3 +486,18 @@ def test_class_init():
     assert "PrivateProperty" in test.memory[objref]
     assert test.memory[objref]["PublicProperty"] == 1
     assert test.memory[objref]["PrivateProperty"] == 2
+
+def test_class_return_attr():
+    entry_class = utils.load_class(
+        "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
+    entry_function = utils.load_method("InvokeMethod", entry_class)
+    program = utils.load_program(
+        "../TestPrograms/ClassInstances/out/production/ClassInstances")
+
+    state = [["Test"], [], 0, (
+        "InvokeMethod", "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, True)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    assert test.program_return == 2
