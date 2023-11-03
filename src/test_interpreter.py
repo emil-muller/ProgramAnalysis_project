@@ -439,7 +439,7 @@ def test_fib():
 
     state = [[5], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
-    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
     assert test.program_return == 5
 
@@ -448,7 +448,7 @@ def test_fib():
 
     state = [[6], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
-    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
 
     assert test.program_return == 8
@@ -458,7 +458,7 @@ def test_fib():
 
     state = [[7], [], 0, ("fib","dtu/compute/exec/Calls")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, True)
-    test.memory["dtu/compute/exec/Calls"] = class_obj
+    test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
 
     assert test.program_return == 13

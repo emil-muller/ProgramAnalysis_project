@@ -1,5 +1,6 @@
 from datetime import datetime
 import utils
+import uuid
 import java_mock
 
 LOCAL = 0
@@ -13,6 +14,7 @@ class Interpreter:
         self.program = p
         self.verbose = verbose
         self.memory = {}
+        self.code_memory = {}
         self.stack = []
         self.program_return = None
 
@@ -69,7 +71,7 @@ class Interpreter:
     def load_program_into_memory(self, program):
         for p in program:
             class_name = p["name"]
-            self.memory[class_name] = p
+            self.code_memory[class_name] = p
 
     def pop(self, b):
         (l, s, pc) = self.stack.pop()
@@ -106,7 +108,7 @@ class Interpreter:
             if len(s) > 0:
                 self.stack[-1][OPERANDSTACK].append(s[-1])
             # Set program to invokee invoker and resume execution
-            self.program = utils.load_method(self.stack[-1][INVOKEDBY][0], self.memory[self.stack[-1][INVOKEDBY][1]])
+            self.program = utils.load_method(self.stack[-1][INVOKEDBY][0], self.code_memory[self.stack[-1][INVOKEDBY][1]])
         return b
 
     def op_nop(self, b):
@@ -279,6 +281,22 @@ class Interpreter:
         self.stack[-1][PC] += 1
         return b
 
+    def op_put(self, b):
+        print(f"op_put called on {b}")
+        # Don't handle static puts
+        if b["static"]:
+            self.op_nop()
+            return b
+
+        val = self.stack[-1][OPERANDSTACK].pop()
+        objref = self.stack[-1][OPERANDSTACK].pop()
+        name = b["field"]["name"]
+
+        self.memory[objref][name] = val
+        self.stack[-1][PC] += 1
+        return b
+
+
     def op_get(self, b):
         print(f"op_get called on {b}")
         # Only handle statics
@@ -303,7 +321,9 @@ class Interpreter:
 
     def op_new(self, b):
         print(f"op_new called on {b}")
-        class_name = b["class"]
+        class_name = f'{b["class"]}_{uuid.uuid4()}'
+
+        # Fucks up with multiple object invokations, make random key instead
         self.memory[class_name] = {}
         self.stack[-1][OPERANDSTACK].append(class_name)
         self.stack[-1][PC] += 1
@@ -339,7 +359,11 @@ class Interpreter:
     def op_invoke(self, b):
         print(f"op_invoke called on {b}")
 
-        n = len(b["method"]["args"])
+        if b["access"] == "special":
+            n = 1
+        else:
+            n = 0
+        n += len(b["method"]["args"])
 
         function_params = self.stack[-1][OPERANDSTACK][-n:]
         self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
@@ -360,7 +384,7 @@ class Interpreter:
         # God forgive me for this sin
         try:
             method = utils.load_method(
-                b["method"]["name"], self.memory[b["method"]["ref"]["name"]]
+                b["method"]["name"], self.code_memory[b["method"]["ref"]["name"]]
             )
         except Exception as e:
             print("Method not in memory, trying java mock")
@@ -381,13 +405,13 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1/Example.json")
-    entry_function = utils.load_method("main", entry_class)
+        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
+    entry_function = utils.load_method("CreateClassInstance", entry_class)
     program = utils.load_program(
-        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/static_calls/level1")
+        "/home/user/Documents/Program_analysis/ProgramAnalysis_project/TestPrograms/ClassInstances/out/production/ClassInstances")
 
-    state = [["string_arg"], [], 0, (
-        "main", "level1/Example")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [[], [], 0, (
+        "CreateClassInstance", "Main")]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
 
