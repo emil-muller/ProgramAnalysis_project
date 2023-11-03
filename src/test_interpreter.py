@@ -446,7 +446,7 @@ def test_class_init_override():
     entry_function = utils.load_method("CreateClassInstanceParameter", entry_class, ["int"])
     program = utils.load_program(
         "../TestPrograms/ClassInstances/out/production/ClassInstances")
-    x = random.randint(0xdeadbeef)
+    x = random.randint(0, 0xdeadbeef)
     state = [["Test", x], [], 0, (
         "CreateClassInstanceParameter", "Main",
         ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
