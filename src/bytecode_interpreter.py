@@ -7,6 +7,7 @@ OPERANDSTACK = 1
 PC = 2
 INVOKEDBY = 3
 
+
 class Interpreter:
     def __init__(self, p, verbose):
         self.program = p
@@ -78,10 +79,10 @@ class Interpreter:
         return op.op_return(self, b)
 
     def op_nop(self, b):
-        return op.op_nop(self,b)
+        return op.op_nop(self, b)
 
     def op_load(self, b):
-        return op.op_load(self,b)
+        return op.op_load(self, b)
 
     def op_binary(self, b):
         return op.op_binary(self, b)
@@ -135,7 +136,7 @@ class Interpreter:
 if __name__ == "__main__":
     entry_class = utils.load_class(
         "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("CreateClassInstanceParameter", entry_class,["int"])
+    entry_function = utils.load_method("CreateClassInstanceParameter", entry_class, ["int"])
     program = utils.load_program(
         "../TestPrograms/ClassInstances/out/production/ClassInstances")
 

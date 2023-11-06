@@ -6,6 +6,8 @@ LOCAL = 0
 OPERANDSTACK = 1
 PC = 2
 INVOKEDBY = 3
+
+
 def op_return(intepreter, b):
     # Note we should perhaps use the class pop function
     # but the slides contains errors, so I'm not sure
@@ -33,10 +35,12 @@ def op_return(intepreter, b):
         )
     return b
 
+
 def op_nop(interpreter, b):
     print(f"\n!!!!!op_nop called on {b}!!!!!\n")
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_load(interpreter, b):
     print(f"op_load called on {b}")
@@ -44,6 +48,7 @@ def op_load(interpreter, b):
     interpreter.stack[-1][OPERANDSTACK].append(v)
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_binary(interpreter, b):
     print(f"op_add called on {b}")
@@ -73,6 +78,7 @@ def op_binary(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+
 def op_if(interpreter, b):
     print(f"op_if called on {b}")
     v_2 = interpreter.stack[-1][OPERANDSTACK].pop()
@@ -101,6 +107,7 @@ def op_if(interpreter, b):
             interpreter.stack[-1][PC] = b["target"]
     return b
 
+
 def op_ifz(interpreter, b):
     print(f"op_ifz called on {b}")
     v_1 = interpreter.stack[-1][OPERANDSTACK].pop()
@@ -120,6 +127,7 @@ def op_ifz(interpreter, b):
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
     return b
+
 
 def op_store(interperter, b):
     print(f"op_store called on {b}")
@@ -163,11 +171,13 @@ def op_incr(interpreter, b):
         interpreter.op_nop(b)
     return b
 
+
 def op_push(interpreter, b):
     print(f"op_push called on {b}")
     interpreter.stack[-1][OPERANDSTACK].append(b["value"]["value"])
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_dup(interpreter, b):
     print(f"op_dup called on {b}")
@@ -175,6 +185,7 @@ def op_dup(interpreter, b):
     interpreter.stack[-1][OPERANDSTACK].append(v)
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_goto(interpreter, b):
     # Note this only works for gotos within the routine
@@ -197,6 +208,7 @@ def op_array_load(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+
 def op_arraylength(interpreter, b):
     print(f"op_arraylength called on {b}")
     arr_ref = interpreter.stack[-1][OPERANDSTACK].pop()
@@ -205,6 +217,7 @@ def op_arraylength(interpreter, b):
     interpreter.stack[-1][OPERANDSTACK].append(arr_len)
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_put(interpreter, b):
     print(f"op_put called on {b}")
@@ -221,6 +234,7 @@ def op_put(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+
 def op_get(interpreter, b):
     print(f"op_get called on {b}")
     if b["static"]:
@@ -233,6 +247,7 @@ def op_get(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+
 def op_new(interpreter, b):
     print(f"op_new called on {b}")
     class_name = f'{b["class"]}_{uuid.uuid4()}'
@@ -241,6 +256,7 @@ def op_new(interpreter, b):
     interpreter.stack[-1][OPERANDSTACK].append(class_name)
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_newarray(interpreter, b):
     print(f"op_newarray called on {b}")
@@ -258,6 +274,7 @@ def op_newarray(interpreter, b):
 
     interpreter.stack[-1][PC] += 1
     return b
+
 
 def op_array_store(interpreter, b):
     print(f"op_array_store called on {b}")
