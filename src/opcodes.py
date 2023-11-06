@@ -252,7 +252,7 @@ def op_new(interpreter, b):
     print(f"op_new called on {b}")
     class_name = f'{b["class"]}_{uuid.uuid4()}'
 
-    interpreter.memory[class_name] = {}
+    interpreter.memory[class_name] = {"class": b["class"]}
     interpreter.stack[-1][OPERANDSTACK].append(class_name)
     interpreter.stack[-1][PC] += 1
     return b
@@ -340,10 +340,22 @@ def op_invoke(interpreter, b):
         except Exception as e:
             # Check if method is defined in ew super class
             class_name = super_class
-            
+
             # Don't load system calls
             if super_class.startswith("java/"):
                 break
+
+    # Handle interfaces
+    # Danger, doesn't handle superclass recursion yet
+    if b["access"] == "interface":
+        # Find object class
+        objref = function_params[0]
+        objref_class = interpreter.memory[objref]["class"]
+
+        # Find method
+        method = method = utils.load_method(
+                method_name, interpreter.code_memory[objref_class], params_types
+            )
 
     if not method:
         print("Method not in memory, trying java mock")
@@ -362,6 +374,7 @@ def op_invoke(interpreter, b):
 
 
 def op_pop(self, b):
+    print(f"op_pop called on {b}")
     n = b["words"]
     self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
     self.stack[-1][PC] += 1
