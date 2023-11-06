@@ -7,10 +7,13 @@ def load_class(path):
         json_txt = f.read()
     return json.loads(json_txt)
 
-
-def load_method(name, class_json):
+def load_method(name, class_json, params=None):
+    possible_methods = []
     for method in class_json["methods"]:
-        if method["name"] == name:
+        if method["name"] != name:
+            continue
+        method_params = [p["type"]["base"] for p in method["params"]]
+        if method_params == params:
             return method["code"]
 
 
