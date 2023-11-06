@@ -17,6 +17,8 @@ def load_method(name, class_json, params=None):
             return method["code"]
 
 
+
+
 # Assumes all decompiled json files necessary for the program
 # is in the same folder
 def load_program(path):

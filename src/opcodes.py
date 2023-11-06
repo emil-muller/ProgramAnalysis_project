@@ -316,13 +316,33 @@ def op_invoke(interpreter, b):
     interpreter.call_trace.append((interpreter.stack[-2][INVOKEDBY], interpreter.stack[-1][INVOKEDBY]))
 
     # God forgive me for this sin
+    method = None
+    class_name = b["method"]["ref"]["name"]
+    method_name = b["method"]["name"]
+    params_types = b["method"]["args"]
     try:
         method = utils.load_method(
-            b["method"]["name"], interpreter.code_memory[b["method"]["ref"]["name"]], b["method"]["args"]
+            method_name, interpreter.code_memory[class_name], params_types
         )
     except KeyError as e:
+        print("Method not in class, trying superclass")
+
+
+    # For inheritance
+    while not method:
+        super_class = class_name
+        try:
+            super_class = interpreter.code_memory[class_name]["super"]["name"]
+            method = utils.load_method(
+                method_name, interpreter.code_memory[super_class], params_types
+            )
+        except Exception as e:
+            # Don't load system calls
+            if super_class.startswith("java/"):
+                break
+
+    if not method:
         print("Method not in memory, trying java mock")
-        method = None
         if b["method"]["ref"]["name"].startswith("java/"):
             java_mock.system_call(interpreter, b)
 
@@ -334,4 +354,11 @@ def op_invoke(interpreter, b):
     else:
         interpreter.stack.pop()
 
+    return b
+
+
+def op_pop(self, b):
+    n = b["words"]
+    self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
+    self.stack[-1][PC] += 1
     return b

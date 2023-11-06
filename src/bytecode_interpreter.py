@@ -61,7 +61,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack)
+        print(self.stack[-1])
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -132,16 +132,19 @@ class Interpreter:
     def op_invoke(self, b):
         return op.op_invoke(self, b)
 
+    def op_pop(self, b):
+        return op.op_pop(self, b)
+
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("CreateClassInstanceParameter", entry_class, ["int"])
+        "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
+    entry_function = utils.load_method("CallsInheritedVoidMethod", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/ClassInstances/out/production/ClassInstances")
+        "../TestPrograms/Inheritance/out/production/Inheritance")
 
-    state = [["Test", 123], [], 0, (
-        "CreateClassInstanceParameter", "Main", ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["Test"], [], 0, (
+        "CallsInheritedVoidMethod", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
 
