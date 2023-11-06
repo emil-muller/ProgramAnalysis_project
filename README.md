@@ -1,3 +1,29 @@
+# Docker
+
+The Dockerfile executes the main.py python file in order generate the state diagram (plantuml file) where it is then used to generate a .png file of the state diagram
+
+To build the container's image
+```
+docker build -t prog_anal .
+```
+
+To run the container:
+```
+docker run -it --rm --volume $(pwd):/data --user $(id -u):$(id -g) prog_anal:latest -o <OUTPUT_FILE>
+
+```
+
+**When using the docker run, make sure that you are in the ProgramAnalysis_project dir, the OUTPUT_FILE overwrites any files with the same name**
+
+
+
+In order to avoid having to do a docker build everytime something changes to the code, instead of doing a hard copy of the src dir to the container, the dir is instead mounted using docker volumes.
+
+
+For development reasons,  instead of using the boilerplate code for argument parsing, all arguments are hard coded in the main.py file expect of the output file.
+
+
+
 # Installation
 
 No dependencies for application. 

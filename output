@@ -1,0 +1,16 @@
+@startuml
+"level1/Example" -> "level1/Utils" : addnumber
+"level1/Utils" -> "level1/Utils" : getnumber
+"level1/Utils" <-- "level1/Utils" : getnumber
+"level1/Example" <-- "level1/Utils" : addnumber
+"level1/Example" -> "level1/Other" : PrintSomething
+"level1/Other" -> "java/io/PrintStream" : println
+"level1/Other" <-- "java/io/PrintStream" : println
+"level1/Example" <-- "level1/Other" : PrintSomething
+"level1/Example" -> "level1/Other" : doRandomStuff
+"level1/Example" <-- "level1/Other" : doRandomStuff
+"level1/Example" -> "level1/Other" : PrintSomething
+"level1/Other" -> "java/io/PrintStream" : println
+"level1/Other" <-- "java/io/PrintStream" : println
+"level1/Example" <-- "level1/Other" : PrintSomething
+@enduml
