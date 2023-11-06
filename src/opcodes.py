@@ -327,8 +327,9 @@ def op_invoke(interpreter, b):
     except KeyError as e:
         print("Method not in class, trying superclass")
 
-
-    # For inheritance
+    # Handle inheritance.
+    # Danger! Assumes call is either to known class or call to java std
+    # If not this will run forever
     while not method:
         super_class = class_name
         try:
@@ -337,6 +338,9 @@ def op_invoke(interpreter, b):
                 method_name, interpreter.code_memory[super_class], params_types
             )
         except Exception as e:
+            # Check if method is defined in ew super class
+            class_name = super_class
+            
             # Don't load system calls
             if super_class.startswith("java/"):
                 break
