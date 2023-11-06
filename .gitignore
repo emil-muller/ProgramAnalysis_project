@@ -5,4 +5,4 @@ build
 vendor
 *log.txt*
 .idea
-
+*.class
