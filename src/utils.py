@@ -64,7 +64,7 @@ def lookup_virtual_and_static_method(interpreter, b):
         super_class = class_name
         try:
             super_class = interpreter.code_memory[class_name]["super"]["name"]
-            method = utils.load_method(
+            method = load_method(
                 method_name, interpreter.code_memory[super_class], params_types
             )
         except Exception as e:
