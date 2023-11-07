@@ -317,45 +317,20 @@ def op_invoke(interpreter, b):
 
     # God forgive me for this sin
     method = None
-    class_name = b["method"]["ref"]["name"]
-    method_name = b["method"]["name"]
-    params_types = b["method"]["args"]
-    try:
-        method = utils.load_method(
-            method_name, interpreter.code_memory[class_name], params_types
-        )
-    except KeyError as e:
-        print("Method not in class, trying superclass")
+    if b["access"] == "static":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
 
-    # Handle inheritance.
-    # Danger! Assumes call is either to known class or call to java std
-    # If not this will run forever
-    while not method:
-        super_class = class_name
-        try:
-            super_class = interpreter.code_memory[class_name]["super"]["name"]
-            method = utils.load_method(
-                method_name, interpreter.code_memory[super_class], params_types
-            )
-        except Exception as e:
-            # Check if method is defined in ew super class
-            class_name = super_class
+    if b["access"] == "virtual":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
 
-            # Don't load system calls
-            if super_class.startswith("java/"):
-                break
+    if b["access"] == "special":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
 
     # Handle interfaces
     # Danger, doesn't handle superclass recursion yet
     if b["access"] == "interface":
-        # Find object class
         objref = function_params[0]
-        objref_class = interpreter.memory[objref]["class"]
-
-        # Find method
-        method = method = utils.load_method(
-                method_name, interpreter.code_memory[objref_class], params_types
-            )
+        method = utils.lookup_interface_method(interpreter, b, objref)
 
     if not method:
         print("Method not in memory, trying java mock")
