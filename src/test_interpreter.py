@@ -508,4 +508,4 @@ def test_interface():
     test.load_program_into_memory(program)
 
     test.run(state)
-    assert test.program_return == 0
+    assert test.program_return == None

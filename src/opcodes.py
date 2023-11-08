@@ -21,7 +21,7 @@ def op_return(intepreter, b):
             intepreter.program_return = None
     else:
         # Add return to calltrace
-        intepreter.call_trace.append((intepreter.stack[-1][INVOKEDBY], intepreter.stack[-2][INVOKEDBY]))
+        intepreter.call_trace.append((intepreter.stack[-1][INVOKEDBY], intepreter.stack[-2][INVOKEDBY], "return"))
 
         # pop stackframe and push function return value to previous stackframes operand stack
         (l, s, pc, invoker) = intepreter.stack.pop()
@@ -119,6 +119,14 @@ def op_ifz(interpreter, b):
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+    if b["condition"] == "lt":
+        if v_1 >= 0:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
     if b["condition"] == "ne":
         if v_1 != 0:
             # Increase program counter if condition is met
@@ -174,7 +182,8 @@ def op_incr(interpreter, b):
 
 def op_push(interpreter, b):
     print(f"op_push called on {b}")
-    interpreter.stack[-1][OPERANDSTACK].append(b["value"]["value"])
+    if b["value"]:
+        interpreter.stack[-1][OPERANDSTACK].append(b["value"]["value"])
     interpreter.stack[-1][PC] += 1
     return b
 
@@ -313,7 +322,7 @@ def op_invoke(interpreter, b):
     interpreter.stack.append(new_stack_frame)
 
     # Add call to calltrace
-    interpreter.call_trace.append((interpreter.stack[-2][INVOKEDBY], interpreter.stack[-1][INVOKEDBY]))
+    interpreter.call_trace.append((interpreter.stack[-2][INVOKEDBY], interpreter.stack[-1][INVOKEDBY], "invoke"))
 
     # God forgive me for this sin
     method = None

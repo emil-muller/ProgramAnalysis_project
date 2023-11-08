@@ -76,3 +76,15 @@ def lookup_virtual_and_static_method(interpreter, b):
 
     return method
 
+
+def to_plantuml(call_trace, interpreter):
+    uml_str = "@startuml\n"
+    for invoker,invokee, type in call_trace:
+        if type == "invoke":
+            if invokee[0] != "<init>" or interpreter.verbose:
+                uml_str += f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}\n'
+        elif type == "return":
+            if invoker[0] != "<init>" or interpreter.verbose:
+                uml_str += f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}\n'
+    uml_str += "@enduml"
+    return uml_str

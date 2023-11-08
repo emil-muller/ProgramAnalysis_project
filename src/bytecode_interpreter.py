@@ -138,16 +138,17 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
-    entry_function = utils.load_method("MultiLevelInheritance", entry_class, [])
+        "../TestPrograms/InterpreterTests/out/production/InterpreterTests/Main.json")
+    entry_function = utils.load_method("RentBookExceptionTest", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/Inheritance/out/production/Inheritance")
+        "../TestPrograms/InterpreterTests/out/production/InterpreterTests")
 
     state = [["Test"], [], 0, (
-        "MultiLevelInheritance", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, True)
+        "RentBookExceptionTest", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
     print(test.program_return)
     print(test.call_trace)
+    print(utils.to_plantuml(test.call_trace, test))
