@@ -9,21 +9,21 @@ public class Library {
         books[0] = booke;
 
         BookEntry booke2 = new BookEntry(2);
-        booke.Name = "Book: 2";
-        booke.Author = "Author: 2";
-        booke.Year = 2002;
+        booke2.Name = "Book: 2";
+        booke2.Author = "Author: 2";
+        booke2.Year = 2002;
         books[1] = booke2;
 
         BookEntry booke3 = new BookEntry(3);
-        booke.Name = "Book: 3";
-        booke.Author = "Author: 3";
-        booke.Year = 2003;
+        booke3.Name = "Book: 3";
+        booke3.Author = "Author: 3";
+        booke3.Year = 2003;
         books[2] = booke3;
 
         BookEntry booke4 = new BookEntry(4);
-        booke.Name = "Book: 4";
-        booke.Author = "Author: 4";
-        booke.Year = 2004;
+        booke4.Name = "Book: 4";
+        booke4.Author = "Author: 4";
+        booke4.Year = 2004;
         books[3] = booke4;
     }
 
