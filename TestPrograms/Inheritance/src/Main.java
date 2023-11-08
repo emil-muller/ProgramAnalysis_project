@@ -30,9 +30,9 @@ public class Main {
         C.InterfaceVoid();
     }
 
-    public void CallsInterfaceMethodWithInterface(){
+    public int CallsInterfaceMethodWithInterface(){
         ImplementsIA C = new ImplementsIA();
         IA ia = C;
-        ia.InterfaceVoid();
+        return ia.InterfaceInt();
     }
 }

@@ -252,7 +252,7 @@ def op_new(interpreter, b):
     print(f"op_new called on {b}")
     class_name = f'{b["class"]}_{uuid.uuid4()}'
 
-    interpreter.memory[class_name] = {}
+    interpreter.memory[class_name] = {"class": b["class"]}
     interpreter.stack[-1][OPERANDSTACK].append(class_name)
     interpreter.stack[-1][PC] += 1
     return b
@@ -316,13 +316,24 @@ def op_invoke(interpreter, b):
     interpreter.call_trace.append((interpreter.stack[-2][INVOKEDBY], interpreter.stack[-1][INVOKEDBY]))
 
     # God forgive me for this sin
-    try:
-        method = utils.load_method(
-            b["method"]["name"], interpreter.code_memory[b["method"]["ref"]["name"]], b["method"]["args"]
-        )
-    except KeyError as e:
+    method = None
+    if b["access"] == "static":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
+
+    if b["access"] == "virtual":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
+
+    if b["access"] == "special":
+        method = utils.lookup_virtual_and_static_method(interpreter, b)
+
+    # Handle interfaces
+    # Danger, doesn't handle superclass recursion yet
+    if b["access"] == "interface":
+        objref = function_params[0]
+        method = utils.lookup_interface_method(interpreter, b, objref)
+
+    if not method:
         print("Method not in memory, trying java mock")
-        method = None
         if b["method"]["ref"]["name"].startswith("java/"):
             java_mock.system_call(interpreter, b)
 
@@ -334,4 +345,12 @@ def op_invoke(interpreter, b):
     else:
         interpreter.stack.pop()
 
+    return b
+
+
+def op_pop(self, b):
+    print(f"op_pop called on {b}")
+    n = b["words"]
+    self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
+    self.stack[-1][PC] += 1
     return b

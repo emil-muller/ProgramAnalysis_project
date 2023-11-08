@@ -15,6 +15,7 @@ def load_method(name, class_json, params=None):
         method_params = [p["type"]["base"] for p in method["params"]]
         if method_params == params:
             return method["code"]
+    return None
 
 
 # Assumes all decompiled json files necessary for the program
@@ -27,3 +28,51 @@ def load_program(path):
     classes = [load_class(c) for c in classes_to_load]
 
     return classes
+
+
+def lookup_interface_method(interpreter, b, objref):
+    # When we have testcases, expand this to support recursive lookups
+    class_name = b["method"]["ref"]["name"]
+    method_name = b["method"]["name"]
+    params_types = b["method"]["args"]
+
+    objref_class = interpreter.memory[objref]["class"]
+
+    # Find method
+    method = method = load_method(
+        method_name, interpreter.code_memory[objref_class], params_types
+    )
+    return method
+
+
+def lookup_virtual_and_static_method(interpreter, b):
+    method = None
+    class_name = b["method"]["ref"]["name"]
+    method_name = b["method"]["name"]
+    params_types = b["method"]["args"]
+    try:
+        method = load_method(
+            method_name, interpreter.code_memory[class_name], params_types
+        )
+    except KeyError as e:
+        print("Method not in class, trying superclass")
+
+    # Handle inheritance.
+    # Danger! Assumes call is either to known class or call to java std
+    # If not this will run forever
+    while not method:
+        if class_name.startswith("java/"):
+            break
+
+        super_class = interpreter.code_memory[class_name]["super"]["name"]
+        method = load_method(
+            method_name, interpreter.code_memory[super_class], params_types
+        )
+
+        if method:
+            return method
+
+        class_name = super_class
+
+    return method
+
