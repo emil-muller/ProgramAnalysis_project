@@ -412,7 +412,7 @@ def test_class_init():
     state = [[], [], 0, (
         "CreateClassInstance",
         "Main",[])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, True)
+    test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
@@ -434,7 +434,7 @@ def test_class_return_attr():
 
     state = [["Test"], [], 0, (
         "InvokeMethod", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, True)
+    test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
@@ -450,8 +450,62 @@ def test_class_init_override():
     state = [["Test", x], [], 0, (
         "CreateClassInstanceParameter", "Main",
         ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, True)
+    test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
     assert test.program_return == x
+
+
+def test_simple_inheritance():
+    entry_class = utils.load_class(
+        "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
+    entry_function = utils.load_method("CallsInheritedVoidMethod", entry_class, [])
+    program = utils.load_program(
+        "../TestPrograms/Inheritance/out/production/Inheritance")
+
+    state = [["Test"], [], 0, (
+        "CallsInheritedVoidMethod", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, False)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    objs = list(test.memory.keys())
+    assert len(objs) == 1
+    objref = objs[0]
+    assert "A" in test.memory[objref]
+    assert "B" in test.memory[objref]
+    assert test.memory[objref]["A"] == 1
+    assert test.memory[objref]["B"] == 2
+
+
+def test_get_inherited_props():
+    entry_class = utils.load_class(
+        "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
+    entry_function = utils.load_method("GetsInheritedProperty", entry_class, [])
+    program = utils.load_program(
+        "../TestPrograms/Inheritance/out/production/Inheritance")
+
+    state = [["Test"], [], 0, (
+        "GetsInheritedProperty", "Main",
+        [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, False)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    assert test.program_return == 1
+
+def test_interface():
+    entry_class = utils.load_class(
+        "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
+    entry_function = utils.load_method("CallsInterfaceMethodWithInterface", entry_class, [])
+    program = utils.load_program(
+        "../TestPrograms/Inheritance/out/production/Inheritance")
+
+    state = [["Test"], [], 0, (
+        "CallsInterfaceMethodWithInterface", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, False)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    assert test.program_return == 0
