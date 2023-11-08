@@ -139,12 +139,12 @@ class Interpreter:
 if __name__ == "__main__":
     entry_class = utils.load_class(
         "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
-    entry_function = utils.load_method("CallsInterfaceMethodWithInterface", entry_class, [])
+    entry_function = utils.load_method("MultiLevelInheritance", entry_class, [])
     program = utils.load_program(
         "../TestPrograms/Inheritance/out/production/Inheritance")
 
     state = [["Test"], [], 0, (
-        "CallsInterfaceMethodWithInterface", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "MultiLevelInheritance", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
 

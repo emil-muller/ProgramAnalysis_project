@@ -61,18 +61,18 @@ def lookup_virtual_and_static_method(interpreter, b):
     # Danger! Assumes call is either to known class or call to java std
     # If not this will run forever
     while not method:
-        super_class = class_name
-        try:
-            super_class = interpreter.code_memory[class_name]["super"]["name"]
-            method = load_method(
-                method_name, interpreter.code_memory[super_class], params_types
-            )
-        except Exception as e:
-            # Check if method is defined in ew super class
-            class_name = super_class
+        if class_name.startswith("java/"):
+            break
 
-            # Don't load system calls
-            if super_class.startswith("java/"):
-                break
+        super_class = interpreter.code_memory[class_name]["super"]["name"]
+        method = load_method(
+            method_name, interpreter.code_memory[super_class], params_types
+        )
+
+        if method:
+            return method
+
+        class_name = super_class
+
     return method
 
