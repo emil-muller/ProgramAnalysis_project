@@ -4,6 +4,7 @@ public class BookEntry extends Book {
 
     public BookEntry(int amount){
         InStore = amount;
+        rented = 0;
     }
 
     public boolean AnyAvailable(){
