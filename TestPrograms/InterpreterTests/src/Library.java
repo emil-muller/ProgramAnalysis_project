@@ -29,8 +29,8 @@ public class Library {
 
     public void AddBook(String name, String author, int year, int amount, int index){
         BookEntry booke = new BookEntry(amount);
-        booke.Name = "Book: " + name;
-        booke.Author = "Author: " + author;
+        booke.Name = name;
+        booke.Author =  author;
         booke.Year = year;
         books[index] = booke;
     }
