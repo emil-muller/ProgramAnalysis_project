@@ -3,6 +3,13 @@ public class Main {
         System.out.println("Hello world!");
     }
 
+    public int MultiLevelInheritance(){
+        E3 e3 = new E3();
+        int e1i = e3.E1();
+        int e2i = e3.E2();
+        return e1i;
+    }
+
     public void CallsInheritedVoidMethod(){
         BExtendsA B = new BExtendsA();
         B.VoidA();
