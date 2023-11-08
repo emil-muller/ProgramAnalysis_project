@@ -10,6 +10,7 @@ public class Main {
     public Exception RentBookExceptionTest(){
         Library library = new Library();
         Exception e = library.RentBook(-1);
+        e.PrintException();
         return e;
     }
 }
