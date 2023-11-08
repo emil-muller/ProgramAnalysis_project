@@ -13,16 +13,16 @@ public class Library {
     static class theBack{
         static Book b = new Book("Forbidden knowledge","Xul'gurub");
         static Book[] books = {b};
-        static Book borrow(String name){
+        static Book borrow(String name) throws Exception{
             for (Book b: books) {
                 if(b.equals(name)){
                     return b;
                 }
             }
-            return null;
+            throw new Exception("Book Is Not In The Back");
         }
     }
-    static Book borrow(String name){
+    static Book borrow(String name) throws Exception{
         for (Book b: books) {
             if(b.equals(name)){
                 return b;
@@ -31,10 +31,10 @@ public class Library {
         return theBack.borrow(name);
     }
 
-    static boolean insert(Book b){
+    static boolean insert(Book b) throws Exception{
         for (Book b2: books) {
             if(b.equals(b2.name)){
-                return false;
+                throw new Exception("Book Already exists");
             }
         }
         for(int i = 0; i<capacity; i++){
@@ -43,7 +43,7 @@ public class Library {
                 return true;
             }
         }
-        return false;
+        throw new Exception("Not Enough Caoacity");
     }
 
     static Book[] search(){//NOT FINISHED
