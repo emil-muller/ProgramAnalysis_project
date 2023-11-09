@@ -24,4 +24,12 @@ public class classB {
     public static void callC(){
         classC.doNothing();
     }
+
+    public static void callA(){
+        classA.doNothing();
+    }
+
+    public static void callARecursion(int x){
+        classA.recursion(x-1);
+    }
 }

@@ -1,5 +1,16 @@
 public class classA {
 
+    public static void recursion(int x){
+        if(x>0){
+            classB.callARecursion(x);
+        }
+    }
+
+    public static void backAndForth(){
+        classB.callA();
+    }
+
+
     public static void nonOverlappingAlternatives(int x){
         if(x>10){
             classB.doNothing();
