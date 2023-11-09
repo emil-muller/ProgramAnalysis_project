@@ -1,12 +1,4 @@
 public class classA {
-    public static void testA1(int x){
-        if(x>10){
-            classB.callC();
-        }else{
-            classB.doNothing();
-        }
-        classB.doNothing();
-    }
 
     public static void nonOverlappingAlternatives(int x){
         if(x>10){
