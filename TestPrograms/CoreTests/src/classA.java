@@ -99,4 +99,35 @@ public class classA {
             classB.loopTest(i);
         }
     }
+
+    public static void compressTest(){
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+    }
+
+    public static void instanceExample(){
+        classB b1 = new classB();
+        classB b2 = new classB();
+        b1.instanceDoNothing();
+        b1.instanceDoNothing();
+        b2.instanceDoNothing();
+    }
+
+    public static void instanceToInstanceExample(){
+        classB b1 = new classB();
+        classB b2 = new classB();
+        classC c1 = new classC();
+        classC c2 = new classC();
+        b1.instanceCallC(c1);
+        b2.instanceCallC(c1);
+        c2.instanceDoNothing();
+    }
 }

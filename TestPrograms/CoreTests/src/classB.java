@@ -42,4 +42,12 @@ public class classB {
             classC.doNothing();
         }
     }
+
+    public classB(){}
+
+    public void instanceDoNothing(){}
+
+    public void instanceCallC(classC c){
+        c.instanceDoNothing();
+    }
 }
