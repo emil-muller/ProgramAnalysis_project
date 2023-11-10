@@ -5,7 +5,6 @@ INVOKEDBY = 3
 
 
 def system_call(interpreter, b):
-    print(interpreter.stack[-1][INVOKEDBY])
     if interpreter.stack[-1][INVOKEDBY] == ('println', 'java/io/PrintStream', []) or interpreter.stack[-1][INVOKEDBY] == ('println', 'java/io/PrintStream', [{'kind': 'class', 'name': 'java/lang/String'}]):
         print(interpreter.stack[-1][LOCAL])
         # Add return to calltrace
@@ -26,4 +25,3 @@ def system_call(interpreter, b):
 
     print(f"UNKNOWN SYSTEM COMMAND: {interpreter.stack[-1][INVOKEDBY]}\nEXITING...")
     quit()
-    
