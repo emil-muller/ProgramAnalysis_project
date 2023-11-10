@@ -379,7 +379,7 @@ def test_fib():
     test = Interpreter(program, False)
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
-    assert test.program_return == 5
+    assert test.program_return == 8
 
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj,["int"])
@@ -389,7 +389,7 @@ def test_fib():
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
 
-    assert test.program_return == 8
+    assert test.program_return == 13
 
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj,["int"])
@@ -399,7 +399,7 @@ def test_fib():
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
 
-    assert test.program_return == 13
+    assert test.program_return == 21
 
 
 def test_class_init():

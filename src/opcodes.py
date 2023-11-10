@@ -80,24 +80,27 @@ def op_binary(interpreter, b):
 
 
 def op_if(interpreter, b):
+    # Decompiled code is negative to the actual comparisons in sourcecode, hence the fucked comparisons here
     print(f"op_if called on {b}")
     v_2 = interpreter.stack[-1][OPERANDSTACK].pop()
     v_1 = interpreter.stack[-1][OPERANDSTACK].pop()
 
     if b["condition"] == "gt":
-        if v_1 < v_2:
-            # Increase program counter if condition is met
-            interpreter.stack[-1][PC] += 1
-        else:
-            # Jump to target if condition is not met
-            interpreter.stack[-1][PC] = b["target"]
-    if b["condition"] == "ge":
         if v_1 <= v_2:
             # Increase program counter if condition is met
             interpreter.stack[-1][PC] += 1
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "ge":
+        if v_1 < v_2:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
     if b["condition"] == "le":
         if v_1 > v_2:
             # Increase program counter if condition is met
@@ -105,6 +108,23 @@ def op_if(interpreter, b):
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "lt":
+        if v_1 >= v_2:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "ne":
+        if v_1 == v_2:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
     return b
 
 

@@ -5,7 +5,7 @@ public class Library {
     static Book b2 = new Book("Coding for dummies","Ada Lovelace",0);
     static Book b3 = new Book("Sending messages","Alice",0);
     static Book b4 = new Book("Receiving messages","Bob",0);
-    static Book[] books = {b0,b1,b2,b3,b4,null,null,null,null,null};//array of length caoacity
+    static Book[] books = {b0,b1,b2,b3,b4,null,null,null,null,null};//array of length capacity
 
     static Book borrow(String name, int v) {
         for (Book b: books) {
