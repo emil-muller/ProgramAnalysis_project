@@ -150,4 +150,4 @@ if __name__ == "__main__":
 
     test.run(state)
     uml_lst = utils.to_plantuml(test.call_trace, test)
-    utils.compress_plantuml(uml_lst)
+    print('\n'.join(utils.compress_plantuml(uml_lst)))
