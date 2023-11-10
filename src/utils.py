@@ -113,13 +113,38 @@ def compress_plantuml(uml_lst):
             match = uml_lst[i:i+n]
             if not validate_match(match):
                 continue
-            for k in range(1,(uml_len-i)//n):
-                if match == uml_lst[i+n*k:i+(k+1)*n]:
+
+            k = 1
+            while True:
+                if i+(k+1)*n < uml_len and match == uml_lst[i+n*k:i+(k+1)*n]:
                     print(f"{i=}, {n=}, {k=}")
                     print(match)
-                    print(uml_lst[i+n*k:i+(k+1)*n])
-                    input()
+                    print(uml_lst[i + n * k:i + (k + 1) * n])
+                    k += 1
+            #for k in range(1,(uml_len-i)//n):
+            #    if match == uml_lst[i+n*k:i+(k+1)*n]:
+            #        print(f"{i=}, {n=}, {k=}")
+            #        print(match)
+            #        print(uml_lst[i+n*k:i+(k+1)*n])'''
                 else:
                     if k > 1:
-                        break
+                        #match was found, make edit and call again
+                        new_uml_lst = []
+                        #append all before match
+                        for x in range(0, i):
+                            new_uml_lst.append(uml_lst[x])
+
+                        #add match
+                        new_uml_lst.append(f"START LOOPS BROTHER {k}")
+                        new_uml_lst += match
+                        new_uml_lst.append("END LOOPS BROTHER")
+
+                        #Append all after match
+                        for x in range(i+k*n, uml_len):
+                            new_uml_lst.append(uml_lst[x])
+
+                        print(new_uml_lst)
+                        print()
+                        return compress_plantuml(new_uml_lst)
+                    break
 
