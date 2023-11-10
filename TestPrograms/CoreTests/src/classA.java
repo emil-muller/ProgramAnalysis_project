@@ -100,6 +100,19 @@ public class classA {
         }
     }
 
+    public static void compressTest(){
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+        classB.doNothing();
+    }
+
     public static void instanceExample(){
         classB b1 = new classB();
         classB b2 = new classB();
