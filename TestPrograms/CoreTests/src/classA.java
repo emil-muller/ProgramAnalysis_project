@@ -1,4 +1,9 @@
 public class classA {
+    public static void recursionSimple(boolean recursive){
+        if(recursive){
+            classB.callARecursionSimple();
+        }
+    }
 
     public static void recursion(int x){
         if(x>0){
@@ -24,8 +29,9 @@ public class classA {
     }
 
     public static void clearlyImpossibleCase(int x){
+        classB.doNothing();
         if(false){
-            classB.doNothing();
+            classC.doNothing();
         }
     }
 
@@ -80,5 +86,17 @@ public class classA {
 
     public static void doNothing(){
         return;
+    }
+
+    public static void simpleloopTest(){
+        for(int i = 0; i<10; i++){
+            classB.doNothing();
+        }
+    }
+
+    public static void loopTest(){
+        for(int i = 0; i<10; i++){
+            classB.loopTest(i);
+        }
     }
 }

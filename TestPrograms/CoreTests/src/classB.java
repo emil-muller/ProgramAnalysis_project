@@ -32,4 +32,14 @@ public class classB {
     public static void callARecursion(int x){
         classA.recursion(x-1);
     }
+
+    public static void callARecursionSimple(){
+        classA.recursionSimple(false);
+    }
+
+    public static void loopTest(int i){
+        if(i<4){
+            classC.doNothing();
+        }
+    }
 }
