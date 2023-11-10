@@ -147,8 +147,16 @@ def op_ifz(interpreter, b):
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
 
-    if b["condition"] == "ne":
+    if b["condition"] == "eq":
         if v_1 != 0:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "ne":
+        if v_1 == 0:
             # Increase program counter if condition is met
             interpreter.stack[-1][PC] += 1
         else:
@@ -204,6 +212,8 @@ def op_push(interpreter, b):
     print(f"op_push called on {b}")
     if b["value"]:
         interpreter.stack[-1][OPERANDSTACK].append(b["value"]["value"])
+    else:
+        interpreter.stack[-1][OPERANDSTACK].append(b["value"])
     interpreter.stack[-1][PC] += 1
     return b
 
@@ -237,13 +247,42 @@ def op_array_load(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
-
 def op_arraylength(interpreter, b):
     print(f"op_arraylength called on {b}")
     arr_ref = interpreter.stack[-1][OPERANDSTACK].pop()
 
     arr_len = len(interpreter.memory[arr_ref])
     interpreter.stack[-1][OPERANDSTACK].append(arr_len)
+    interpreter.stack[-1][PC] += 1
+    return b
+
+def op_newarray(interpreter, b):
+    print(f"op_newarray called on {b}")
+
+    # Grab size of array
+    size = interpreter.stack[-1][OPERANDSTACK].pop()
+
+    # Create object reference and push to stack
+    objref = f'Array_{uuid.uuid4()}'
+    interpreter.stack[-1][OPERANDSTACK].append(objref)
+
+    # Technically not necessary to initialize array in python
+    # , but it makes the code more clear
+    interpreter.memory[objref] = [0 for _ in range(size)]
+
+    interpreter.stack[-1][PC] += 1
+    return b
+
+
+def op_array_store(interpreter, b):
+    print(f"op_array_store called on {b}")
+    # Note, doesn't handle doubles or longs
+    val = interpreter.stack[-1][OPERANDSTACK].pop()
+    index = interpreter.stack[-1][OPERANDSTACK].pop()
+    arr_ref = interpreter.stack[-1][OPERANDSTACK].pop()
+
+    interpreter.memory[arr_ref][index] = val
+
     interpreter.stack[-1][PC] += 1
     return b
 
@@ -283,36 +322,6 @@ def op_new(interpreter, b):
 
     interpreter.memory[class_name] = {"class": b["class"]}
     interpreter.stack[-1][OPERANDSTACK].append(class_name)
-    interpreter.stack[-1][PC] += 1
-    return b
-
-
-def op_newarray(interpreter, b):
-    print(f"op_newarray called on {b}")
-
-    # Grab size of array
-    size = interpreter.stack[-1][OPERANDSTACK].pop()
-
-    # Create object reference and push to stack
-    objref = f'Array_{uuid.uuid4()}'
-    interpreter.stack[-1][OPERANDSTACK].append(objref)
-
-    # Technically not necessary to initialize array in python
-    # , but it makes the code more clear
-    interpreter.memory[objref] = [0 for _ in range(size)]
-
-    interpreter.stack[-1][PC] += 1
-    return b
-
-
-def op_array_store(interpreter, b):
-    print(f"op_array_store called on {b}")
-    val = interpreter.stack[-1][OPERANDSTACK].pop()
-    index = interpreter.stack[-1][OPERANDSTACK].pop()
-    arr_ref = interpreter.stack[-1][OPERANDSTACK].pop()
-
-    interpreter.memory[arr_ref][index] = val
-
     interpreter.stack[-1][PC] += 1
     return b
 

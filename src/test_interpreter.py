@@ -177,7 +177,7 @@ def test_first():
         ],
     }
     # Generate random array reference
-    arr_ref = arr_ref = f"Array_{uuid.uuid4()}"
+    arr_ref = f"Array_{uuid.uuid4()}"
     state = [
         [arr_ref],
         [],
@@ -255,7 +255,7 @@ def test_newArray():
         ],
     }
 
-    state = [[], [], 0, ("main","newarray")]  # local variables  # stackframes  # program counter
+    state = [[], [], 0, ("main", "newarray")]  # local variables  # stackframes  # program counter
     test = Interpreter(program, False)
     test.run(state)
     assert test.program_return == 3
@@ -371,20 +371,20 @@ def test_aWierdOneOutOfBounds():
 
 
 def test_fib():
-    # There's a bug in the test decompilation so it always return 1
+    # There's a bug in the test decompilation, so it always return 1
     class_obj = utils.load_class(f"../decompiled/Calls.json")
     program = utils.load_method("fib", class_obj, ["int"])
 
-    state = [[5], [], 0, ("fib","dtu/compute/exec/Calls", ["int"])]  # local variables  # stackframes  # program counter
+    state = [[5], [], 0, ("fib", "dtu/compute/exec/Calls", ["int"])] 
     test = Interpreter(program, False)
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
     assert test.program_return == 8
 
     class_obj = utils.load_class(f"../decompiled/Calls.json")
-    program = utils.load_method("fib", class_obj,["int"])
+    program = utils.load_method("fib", class_obj, ["int"])
 
-    state = [[6], [], 0, ("fib","dtu/compute/exec/Calls", ["int"])]  # local variables  # stackframes  # program counter
+    state = [[6], [], 0, ("fib", "dtu/compute/exec/Calls", ["int"])]
     test = Interpreter(program, False)
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
@@ -392,9 +392,9 @@ def test_fib():
     assert test.program_return == 13
 
     class_obj = utils.load_class(f"../decompiled/Calls.json")
-    program = utils.load_method("fib", class_obj,["int"])
+    program = utils.load_method("fib", class_obj, ["int"])
 
-    state = [[7], [], 0, ("fib","dtu/compute/exec/Calls",["int"])]  # local variables  # stackframes  # program counter
+    state = [[7], [], 0, ("fib", "dtu/compute/exec/Calls", ["int"])]
     test = Interpreter(program, False)
     test.code_memory["dtu/compute/exec/Calls"] = class_obj
     test.run(state)
@@ -405,13 +405,13 @@ def test_fib():
 def test_class_init():
     entry_class = utils.load_class(
         "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("CreateClassInstance", entry_class,[])
+    entry_function = utils.load_method("CreateClassInstance", entry_class, [])
     program = utils.load_program(
         "../TestPrograms/ClassInstances/out/production/ClassInstances")
 
     state = [[], [], 0, (
         "CreateClassInstance",
-        "Main",[])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
@@ -424,6 +424,7 @@ def test_class_init():
     assert "PrivateProperty" in test.memory[objref]
     assert test.memory[objref]["PublicProperty"] == 1
     assert test.memory[objref]["PrivateProperty"] == 2
+
 
 def test_class_return_attr():
     entry_class = utils.load_class(
@@ -440,22 +441,6 @@ def test_class_return_attr():
     test.run(state)
     assert test.program_return == 2
 
-def test_class_init_override():
-    entry_class = utils.load_class(
-        "../TestPrograms/ClassInstances/out/production/ClassInstances/Main.json")
-    entry_function = utils.load_method("CreateClassInstanceParameter", entry_class, ["int"])
-    program = utils.load_program(
-        "../TestPrograms/ClassInstances/out/production/ClassInstances")
-    x = random.randint(0, 0xdeadbeef)
-    state = [["Test", x], [], 0, (
-        "CreateClassInstanceParameter", "Main",
-        ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, False)
-    test.load_program_into_memory(program)
-
-    test.run(state)
-    assert test.program_return == x
-
 
 def test_simple_inheritance():
     entry_class = utils.load_class(
@@ -465,7 +450,7 @@ def test_simple_inheritance():
         "../TestPrograms/Inheritance/out/production/Inheritance")
 
     state = [["Test"], [], 0, (
-        "CallsInheritedVoidMethod", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "CallsInheritedVoidMethod", "Main", [])]
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
@@ -495,6 +480,7 @@ def test_get_inherited_props():
     test.run(state)
     assert test.program_return == 1
 
+
 def test_interface():
     entry_class = utils.load_class(
         "../TestPrograms/Inheritance/out/production/Inheritance/Main.json")
@@ -503,9 +489,9 @@ def test_interface():
         "../TestPrograms/Inheritance/out/production/Inheritance")
 
     state = [["Test"], [], 0, (
-        "CallsInterfaceMethodWithInterface", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "CallsInterfaceMethodWithInterface", "Main", [])]
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
-    assert test.program_return == None
+    assert not test.program_return

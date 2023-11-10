@@ -61,7 +61,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack)
+        print(self.stack[-1])
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -138,13 +138,13 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/CoreTests/out/classA.json")
-    entry_function = utils.load_method("overTheTop", entry_class, ["int"])
+        "../TestPrograms/LibraryTest/out/production/LibraryTest/Tests.json")
+    entry_function = utils.load_method("BorrowBook", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/CoreTests/out/")
+        "../TestPrograms/LibraryTest/out/production/LibraryTest/")
 
-    state = [[9], [], 0, (
-        "overTheTop", "classA", ["int"])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["test"], [], 0, (
+        "BorrowBook", "Tests", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
