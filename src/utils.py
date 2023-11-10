@@ -88,4 +88,38 @@ def to_plantuml(call_trace, interpreter):
     return uml_lst
 
 
+def validate_match(match_lst):
+    if "->" not in match_lst[0]:
+        return False
+
+    if "<--" not in match_lst[-1]:
+        return False
+
+    in_calls = 0
+    out_calls = 0
+    for call in match_lst:
+        if "->" in call:
+            out_calls += 1
+
+        if "<--" in call:
+            in_calls += 1
+    return in_calls == out_calls
+
 def compress_plantuml(uml_lst):
+    compressed_uml = []
+    uml_len = len(uml_lst)
+    for n in range(1, len(uml_lst)-1):
+        for i in range(1, len(uml_lst)-n):
+            match = uml_lst[i:i+n]
+            if not validate_match(match):
+                continue
+            for k in range(1,(uml_len-i)//n):
+                if match == uml_lst[i+n*k:i+(k+1)*n]:
+                    print(f"{i=}, {n=}, {k=}")
+                    print(match)
+                    print(uml_lst[i+n*k:i+(k+1)*n])
+                    input()
+                else:
+                    if k > 1:
+                        break
+
