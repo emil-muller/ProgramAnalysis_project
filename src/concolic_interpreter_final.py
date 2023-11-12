@@ -148,7 +148,7 @@ class ConcolicInterpreter:
         while solver.check() == sat:
             model = solver.model()
             input = [model.eval(p, model_completion=True).as_long() for p in params]
-            print(input)
+            # print(input)
 
             self.stack = [State(
                 {k: ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
@@ -181,7 +181,7 @@ class ConcolicInterpreter:
             print("Couldn't step further")
             return False
         (l, s, pc, invoker) = self.stack[-1].unpack()
-        print(self.stack)
+        # print(self.stack)
         b = Bytecode(self.current_method["code"]["bytecode"][pc])
         if hasattr(self, f"op_{b.opr}"):
             return getattr(self, f"op_{b.opr}")(b)
