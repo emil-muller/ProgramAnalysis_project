@@ -7,13 +7,10 @@ def load_class(path):
         json_txt = f.read()
     return json.loads(json_txt)
 
+
 def load_method(name, class_json, params=None):
-    possible_methods = []
     for method in class_json["methods"]:
-        if method["name"] != name:
-            continue
-        method_params = [p["type"]["base"] for p in method["params"]]
-        if method_params == params:
+        if method["name"] == name:
             return method["code"]
     return None
 
@@ -39,7 +36,7 @@ def lookup_interface_method(interpreter, b, objref):
     objref_class = interpreter.memory[objref]["class"]
 
     # Find method
-    method = method = load_method(
+    method = load_method(
         method_name, interpreter.code_memory[objref_class], params_types
     )
     return method
@@ -78,13 +75,66 @@ def lookup_virtual_and_static_method(interpreter, b):
 
 
 def to_plantuml(call_trace, interpreter):
-    uml_str = "@startuml\n"
-    for invoker,invokee, type in call_trace:
+    uml_lst = ["@startuml"]
+    for invoker, invokee, type in call_trace:
         if type == "invoke":
             if invokee[0] != "<init>" or interpreter.verbose:
-                uml_str += f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}\n'
+                uml_lst.append(f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}')
         elif type == "return":
             if invoker[0] != "<init>" or interpreter.verbose:
-                uml_str += f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}\n'
-    uml_str += "@enduml"
-    return uml_str
+                uml_lst.append(f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}')
+    uml_lst.append("@enduml")
+
+    return uml_lst
+
+
+def validate_match(match_lst):
+    if "->" not in match_lst[0]:
+        return False
+
+    if "<--" not in match_lst[-1]:
+        return False
+
+    in_calls = 0
+    out_calls = 0
+    for call in match_lst:
+        if "->" in call:
+            out_calls += 1
+
+        if "<--" in call:
+            in_calls += 1
+    return in_calls == out_calls
+
+def compress_plantuml(uml_lst):
+    uml_len = len(uml_lst)
+    for n in range(1, len(uml_lst)-1):
+        for i in range(1, len(uml_lst)-n):
+            match = uml_lst[i:i+n]
+            if not validate_match(match):
+                continue
+
+            k = 1
+            non_compressable = False
+            while True:
+                if i+(k+1)*n < uml_len and match == uml_lst[i+n*k:i+(k+1)*n]:
+                    k += 1
+                else:
+                    if k > 1:
+                        #match was found, make edit and call again
+                        new_uml_lst = []
+                        #append all before match
+                        for x in range(0, i):
+                            new_uml_lst.append(uml_lst[x])
+
+                        #add match
+                        new_uml_lst.append(f"group repetition {k}")
+                        new_uml_lst += match
+                        new_uml_lst.append("end")
+
+                        #Append all after match
+                        for x in range(i+k*n, uml_len):
+                            new_uml_lst.append(uml_lst[x])
+
+                        return compress_plantuml(new_uml_lst)
+                    break
+    return uml_lst

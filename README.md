@@ -33,7 +33,7 @@ entry_class = utils.load_class("<PATH_TO_ENTRY_CLASS>.json")
 entry_function = utils.load_method("<NAME_OF_ENTRY_FUNCTION>", entry_class)
 
 # Specify state, e.g. args to entry function
-state = [["entry_args"], [], 0, ("<NAME_OF_ENTRY_FUNCTION>", "<NAME_OF_ENTRY_CLASS>")]
+state = [["entry_args"], [], 0, ("<NAME_OF_ENTRY_FUNCTION>", "<NAME_OF_ENTRY_CLASS>",["<ENTRY_FUCTION_PARAMS>,..."])]
 
 # Initialize interpreter and set verbosity to True
 intepreter = Interpreter(entry_function, True)
