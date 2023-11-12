@@ -1,15 +1,8 @@
 from z3 import *
 from dataclasses import dataclass
 import json
-
-target = None
-
-with open("filepath") as f:
-    result = json.load(f)
-    for m in result["methods"]:
-        if m["name"] == "itDependsOnLattice3":
-            target = m
-            break
+import datetime
+import concolic_opcodes as co
 
 @dataclass
 class Bytecode:
@@ -23,6 +16,10 @@ class Bytecode:
             f"{k}: {v}" for k, v in self.dictionary.items()
             if k != "opr" and k != "offset")
 
+@dataclass
+class Method:
+    bytecode_lst: list[Bytecode]
+    method_json: dict
 
 @dataclass(frozen = True)
 class ConcolicValue:
@@ -77,46 +74,124 @@ class ConcolicValue:
             getattr(self.symbolic, opr)(other.symbolic)
         )
 
-
 @dataclass
 class State:
-    locals: dict[int, ConcolicValue]
+    local_variables: dict[int, ConcolicValue]
     stack: list[ConcolicValue]
+    pc: int
+    invokerenos: tuple[str, str]
+
+
+    def unpack(self):
+        return self.local_variables, self.stack, self.pc, self.invokerenos
 
     def push(self, value):
         self.stack.append(value)
 
-    def pop(self, value):
-        return self.stack.pop(value)
+    def pop(self):
+        return self.stack.pop()
 
     def load(self, index):
-        self.push(locals[index])
+        self.push(self.local_variables[index])
 
     def store(self, index):
-        self.locals[index] = self.stack.pop()
+        self.local_variables[index] = self.stack.pop()
 
 
 class ConcolicInterpreter:
-    def __init__(self, p, verbose):
-        self.state = State()
-        self.bytecode = []
+    def __init__(self, current_method: Method, verbose: bool):
+        self.current_method = current_method
+        self.verbose = verbose
+        self.memory = {}
+        self.code_memory = {}
+        self.stack = []
         self.path = []
-        self.pc = 0
+        self.program_return = None
+
         # This list contains the information needed for the sequence diagram
         self.call_trace = []
 
-    def op_ifz(self, bc):
-        v = self.state.pop()
-        z = ConcolicValue.from_const(0)
-        r = ConcolicValue.compare(z, bc.condition, v)
-        if r.concrete:
-            self.pc = bc.target
-            self.path += [r.symbolic]
-        else:
-            self.path += [Not(r.symbolic)]
-            self.pc += 1
+    def log_start(self):
+        if self.verbose:
+            with open("log/log.txt", "a") as f:
+                f.write(f"----- Started logging for run {datetime.now()} -----\n")
 
-    def concolic(self, target, k = 1000):
+    def log_state(self):
+        if self.verbose:
+            try:
+                (l, s, pc, invoker) = self.stack[-1]
+                b = self.program["bytecode"][pc]
+                with open("log/log.txt", "a") as f:
+                    f.write("----\n")
+                    f.write(
+                        f"stack: \n\t" +
+                        f"locals: {self.stack[-1][LOCAL]}\n\t" +
+                        f"operandstack: {self.stack[-1][OPERANDSTACK]}\n\t" +
+                        f"rip: {self.stack[-1][PC]}\n"
+                    )
+                    f.write(f"bytecode: \n{b}\n")
+                    f.write(f"stackframes:\n {self.stack}\n")
+            except IndexError:
+                print("No frames on stack")
+
+    def log_done(self):
+        if self.verbose:
+            with open("log/log.txt", "a") as f:
+                f.write(f"----- Ended logging for run {datetime.now()} -----\n\n")
+    def run(self, step_limit: int):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
+        self.log_start()
+        self.log_state()
+        solver = Solver()
+
+        params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
+
+        while solver.check() == sat:
+            model = solver.model()
+            input = [model.eval(p, model_completion=True).as_long() for p in params]
+            print(input)
+
+            self.stack = [State(
+                {k: ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
+                [],
+                0,
+                ("invoker", "invokee")
+            )]
+
+            #Path constraints
+            self.path = []
+
+            # Execute bytecode
+            k = 0
+            while self.step() and k < step_limit:
+                self.log_state()
+                k += 1
+
+            path_constraint = And(*self.path)
+            print()
+            print()
+            print(f"{input=} -> {self.program_return}\n{path_constraint}")
+            print()
+            print()
+            solver.add(Not(path_constraint))
+            print(z3.simplify(path_constraint))
+
+        self.log_done()
+
+    def step(self):
+        if not self.stack:
+            print("Couldn't step further")
+            return False
+        (l, s, pc, invoker) = self.stack[-1].unpack()
+        # Be aware python you actually have method_json :D
+        b = Bytecode(self.current_method["code"]["bytecode"][pc])
+        if hasattr(self, f"op_{b.opr}"):
+            return getattr(self, f"op_{b.opr}")(b)
+        else:
+            print(f"Couldn't find attr op_{b.opr}")
+            return False
+
+    # Use for reference, delete when opcodes are implemented
+    def concolic_run(self, target: Method, k = 1000):
         solver = Solver()
         params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
         self.bytecode = [Bytecode(b) for b in target["code"]["bytecode"]]
@@ -128,29 +203,25 @@ class ConcolicInterpreter:
 
             state = State(
                 {k: ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
-                []
+                [],
+                0,
+                ("invokee", "invoker")
             )
 
-            self.pc = 0
-            #Path constraints
-            self.path = []
+            pc = 0
+            # Path constraints
+            path = []
 
             for _ in range(k):
-                bc = self.bytecode[self.pc]
+                bc = self.bytecode[pc]
                 pc += 1
                 print("--------")
                 print(state)
                 print(path)
                 print(bc)
 
-                if hasattr(self, f"op_{bc.opr}"):
-                    return getattr(self, f"op_{bc.opr}")(bc)
-                elif bc.opr == "get" and bc.field["name"] == "$assertionsDisabled":
+                if bc.opr == "get" and bc.field["name"] == "$assertionsDisabled":
                     state.push(ConcolicValue.from_const(False))
-                else:
-                    raise Exception(f"Unsupported bytecode: {bc}")
-
-
                 elif bc.opr == "ifz":
                     v = state.pop()
                     z = ConcolicValue.from_const(0)
@@ -214,8 +285,22 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(path_constraint))
-            break
+            print(z3.simplify(path_constraint))
+    def op_get(self, b):
+        return co.op_get(self, b)
 
+    def op_ifz(self, b):
+        return co.op_ifz(self, b)
 
-concolic = concolic_interpreter()
-concolic.concolic(target)
+if __name__ == "__main__":
+    target = None
+
+    with open("/tmp/Arithmetics.json", "r") as f:
+        result = json.load(f)
+        for m in result["methods"]:
+            if m["name"] == "itDependsOnLattice3":
+                target = m
+                break
+    interpreter = ConcolicInterpreter(target, False)
+    # interpreter.concolic_run(target)
+    interpreter.run(10)

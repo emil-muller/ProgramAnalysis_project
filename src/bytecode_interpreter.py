@@ -54,7 +54,7 @@ class Interpreter:
         self.log_state()
         while self.step():
             self.log_state()
-            continue
+            # continue
         self.log_done()
 
     def step(self):
