@@ -8,30 +8,30 @@ PC = 2
 INVOKEDBY = 3
 
 
-def op_return(intepreter, b):
+def op_return(interpreter, b):
     # Note we should perhaps use the class pop function
     # but the slides contains errors, so I'm not sure
     print(f"op_return called on {b}")
 
-    if len(intepreter.stack) == 1:
-        (l, s, pc, invoker) = intepreter.stack.pop()
+    if len(interpreter.stack) == 1:
+        (l, s, pc, invoker) = interpreter.stack.pop()
         if len(s) > 0:
-            intepreter.program_return = s[-1]
+            interpreter.program_return = s[-1]
         else:
-            intepreter.program_return = None
+            interpreter.program_return = None
     else:
         # Add return to calltrace
-        intepreter.call_trace.append((intepreter.stack[-1][INVOKEDBY], intepreter.stack[-2][INVOKEDBY], "return"))
+        interpreter.call_trace.append((interpreter.stack[-1][INVOKEDBY], interpreter.stack[-2][INVOKEDBY], "return"))
 
         # pop stackframe and push function return value to previous stackframes operand stack
-        (l, s, pc, invoker) = intepreter.stack.pop()
+        (l, s, pc, invoker) = interpreter.stack.pop()
         if len(s) > 0:
-            intepreter.stack[-1][OPERANDSTACK].append(s[-1])
+            interpreter.stack[-1][OPERANDSTACK].append(s[-1])
         # Set program to invokee invoker and resume execution
-        intepreter.program = utils.load_method(
-            intepreter.stack[-1][INVOKEDBY][0],
-            intepreter.code_memory[intepreter.stack[-1][INVOKEDBY][1]],
-            intepreter.stack[-1][INVOKEDBY][2]
+        interpreter.program = utils.load_method(
+            interpreter.stack[-1][INVOKEDBY][0],
+            interpreter.code_memory[interpreter.stack[-1][INVOKEDBY][1]],
+            interpreter.stack[-1][INVOKEDBY][2]
         )
     return b
 

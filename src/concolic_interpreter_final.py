@@ -169,11 +169,10 @@ class ConcolicInterpreter:
             path_constraint = And(*self.path)
             print()
             print()
-            print(f"{input=} -> {self.program_return}\n{path_constraint}")
+            print(f"{input=} -> {self.program_return}\n{z3.simplify(path_constraint)}")
             print()
             print()
-            solver.add(Not(path_constraint))
-            print(z3.simplify(path_constraint))
+            solver.add(Not(z3.simplify(path_constraint)))
 
         self.log_done()
 
@@ -182,7 +181,7 @@ class ConcolicInterpreter:
             print("Couldn't step further")
             return False
         (l, s, pc, invoker) = self.stack[-1].unpack()
-        # Be aware python you actually have method_json :D
+        print(self.stack)
         b = Bytecode(self.current_method["code"]["bytecode"][pc])
         if hasattr(self, f"op_{b.opr}"):
             return getattr(self, f"op_{b.opr}")(b)
@@ -190,107 +189,40 @@ class ConcolicInterpreter:
             print(f"Couldn't find attr op_{b.opr}")
             return False
 
-    # Use for reference, delete when opcodes are implemented
-    def concolic_run(self, target: Method, k = 1000):
-        solver = Solver()
-        params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
-        self.bytecode = [Bytecode(b) for b in target["code"]["bytecode"]]
-
-        while solver.check() == sat:
-            model = solver.model()
-            input = [model.eval(p, model_completion=True).as_long() for p in params]
-            print(input)
-
-            state = State(
-                {k: ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
-                [],
-                0,
-                ("invokee", "invoker")
-            )
-
-            pc = 0
-            # Path constraints
-            path = []
-
-            for _ in range(k):
-                bc = self.bytecode[pc]
-                pc += 1
-                print("--------")
-                print(state)
-                print(path)
-                print(bc)
-
-                if bc.opr == "get" and bc.field["name"] == "$assertionsDisabled":
-                    state.push(ConcolicValue.from_const(False))
-                elif bc.opr == "ifz":
-                    v = state.pop()
-                    z = ConcolicValue.from_const(0)
-                    r = ConcolicValue.compare(z, bc.condition, v)
-                    if r.concrete:
-                        pc = bc.target
-                        path += [r.symbolic]
-                    else:
-                        path += [Not(r.symbolic)]
-                elif bc.opr == "if":
-                    v2 = state.pop()
-                    v1 = state.pop()
-                    r = ConcolicValue.compare(v1, bc.condition, v2)
-                    if r.concrete:
-                        pc = bc.target
-                        path += [r.symbolic]
-                    else:
-                        path += [Not(r.symbolic)]
-                elif bc.opr == "new" and bc.dictionary["class"] == "java/lang/AssertionError":
-                    result = "AssertionError"
-                    break
-                elif bc.opr == "load":
-                    state.load(bc.index)
-                elif bc.opr == "store":
-                    state.store(bc.index)
-                elif bc.opr == "push":
-                    state.push(ConcolicValue.from_const(bc.value["value"]))
-                elif bc.opr == "binary":
-                    v2 = state.pop()
-                    v1 = state.pop()
-                    if bc.operant == "div":
-                        if v2.concrete == 0:
-                            result = "Divide by 0"
-                            path += [v2.symbolic == 0]
-                            break
-                        else:
-                            path += [Not(v2.symbolic == 0)]
-                    r = v1.binary(bc.operant, v2)
-                    state.push(r)
-                elif bc.opr == "incr":
-                    state.load(bc.index)
-                    v = state.pop()
-                    state.push(v1.binary("add", ConcolicValue.from_const(bc.amount)))
-                    state.store(bc.index)
-                elif bc.opr == "goto":
-                    pc = bc.target
-                elif bc.opr == "return":
-                    if bc.type is None:
-                        result = "returned void"
-                    result = f"returned {state.pop()}"
-                    break
-                else:
-                    raise Exception(f"Unsupported bytecode: {bc}")
-            else:
-                result = "out of iterations"
-
-            path_constraint = And(*path)
-            print()
-            print()
-            print(input, " -> ", result, path_constraint)
-            print()
-            print()
-            solver.add(Not(path_constraint))
-            print(z3.simplify(path_constraint))
     def op_get(self, b):
         return co.op_get(self, b)
 
     def op_ifz(self, b):
         return co.op_ifz(self, b)
+
+    def op_load(self, b):
+        return co.op_load(self, b)
+
+    def op_push(self, b):
+        return co.op_push(self, b)
+
+    def op_if(self, b):
+        return co.op_if(self, b)
+
+    def op_new(self, b):
+        return co.op_new(self, b)
+
+    def op_store(self, b):
+        return co.op_store(self, b)
+
+    def op_binary(self, b):
+        return co.op_binary(self, b)
+
+
+    def op_incr(self, b):
+        return co.op_incr(self, b)
+
+
+    def op_goto(self, b):
+        return co.op_goto(self, b)
+
+    def op_return(self, b):
+        return co.op_return(self, b)
 
 if __name__ == "__main__":
     target = None
@@ -302,5 +234,4 @@ if __name__ == "__main__":
                 target = m
                 break
     interpreter = ConcolicInterpreter(target, False)
-    # interpreter.concolic_run(target)
-    interpreter.run(10)
+    interpreter.run(1000)

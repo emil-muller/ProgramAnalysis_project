@@ -103,8 +103,21 @@ def op_ifz(interpreter, b):
         interpreter.stack[-1].pc = b.target
         interpreter.path += [r.symbolic]
     else:
+        interpreter.stack[-1].pc += 1
         interpreter.path += [Not(r.symbolic)]
-    interpreter.stack[-1].pc += 1
+    return b
+
+def op_if(interpreter, b):
+    print(f"op_if called on {b}")
+    v2 = interpreter.stack[-1].pop()
+    v1 = interpreter.stack[-1].pop()
+    r = ConcolicValue.compare(v1, b.condition, v2)
+    if r.concrete:
+        interpreter.stack[-1].pc = b.target
+        interpreter.path += [r.symbolic]
+    else:
+        interpreter.stack[-1].pc += 1
+        interpreter.path += [Not(r.symbolic)]
     return b
 
 def op_get(interpreter, b):
@@ -114,4 +127,80 @@ def op_get(interpreter, b):
     else:
         print("!!!!! Not Implemented !!!!!!")
     interpreter.stack[-1].pc += 1
+    return b
+
+def op_load(interpreter, b):
+    print(f"op_load called on {b}")
+    interpreter.stack[-1].load(b.index)
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_push(interpreter, b):
+    print(f"op_push called on {b}")
+    interpreter.stack[-1].push(ConcolicValue.from_const(b.value["value"]))
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_new(interpreter, b):
+    print(f"op_new called on {b}")
+    if b.dictionary["class"] == "java/lang/AssertionError":
+        interpreter.program_return = "AssertionError"
+        return None  # Will terminate current execution
+    else:
+        print("!!!!!! NO OPERATION MADE !!!!!!")
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_store(interpreter, b):
+    print(f"op_store called on {b}")
+    interpreter.stack[-1].store(b.index)
+    interpreter.stack[-1].pc += 1
+    return b
+
+
+def op_binary(interpreter, b):
+    print(f"op_binary called on {b}")
+    v2 = interpreter.stack[-1].pop()
+    v1 = interpreter.stack[-1].pop()
+    if b.operant == "div":
+        if v2.concrete == 0:
+            interpreter.program_return = "Divide by 0"
+            interpreter.path += [v2.symbolic == 0]
+            return None # Terminates program
+        else:
+            interpreter.path += [Not(v2.symbolic == 0)]
+    r = v1.binary(b.operant, v2)
+    interpreter.stack[-1].push(r)
+
+    interpreter.stack[-1].pc += 1
+    return b
+
+
+def op_incr(interpreter, b):
+    print(f"op_incr called on {b}")
+    interpreter.stack[-1].load(b.index)
+    v = interpreter.stack[-1].pop()
+    interpreter.stack[-1].push(v.binary("add", ConcolicValue.from_const(b.amount)))
+    interpreter.stack[-1].store(b.index)
+
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_goto(interpreter, b):
+    print(f"op_goto called on {b}")
+    interpreter.stack[-1].pc = b.target
+    return b
+
+def op_return(interpreter, b):
+    print(f"op_return called on {b}")
+    if b.type is None:
+        interpreter.program_return = "Returned void"
+    if len(interpreter.stack) == 1:
+        (l, s, pc, invoker) = interpreter.stack[-1].unpack()
+        interpreter.stack.pop()
+        if len(s) > 0:
+            interpreter.program_return = s[-1]
+        else:
+            interpreter.program_return = None
+
     return b
