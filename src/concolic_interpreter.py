@@ -42,7 +42,6 @@ class ConcolicValue:
             return ConcolicValue(c, IntVal(c))
 
         raise Exception(f"Unknown const {c}")
-
     def binary(self, operant, other):
         DICT = {
             "sub": "__sub__",
@@ -73,7 +72,6 @@ class ConcolicValue:
             opr = DICT[copr]
         else:
             raise Exception(f"Unknown comparison operation {corp}")
-
         return ConcolicValue(
             getattr(self.concrete, opr)(other.concrete),
             getattr(self.symbolic, opr)(other.symbolic)

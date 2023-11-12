@@ -8,7 +8,6 @@ target = None
 filepath = os.path.abspath('../TestPrograms/static_calls/level1/Example.json')
 print(filepath)
 
-
 with open(filepath) as f:
     result = json.load(f)
     for m in result["methods"]:
@@ -34,8 +33,7 @@ class Bytecode:
 @dataclass(frozen = True)
 class ConcolicValue:
     concrete: int | bool
-    symbolic: z3.ExprRef #ExprRef 
-
+    symbolic: ExprRef
 
     def __repr__(self):
         return f"{self.concrete} {self.symbolic}"
