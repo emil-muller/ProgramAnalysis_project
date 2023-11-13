@@ -61,7 +61,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack)
+        print(self.stack[-1])
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -138,17 +138,16 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/InterpreterTests/out/production/InterpreterTests/Main.json")
-    entry_function = utils.load_method("RentBookExceptionTest", entry_class, [])
+        "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
+    entry_function = utils.load_method("compressTest", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/InterpreterTests/out/production/InterpreterTests")
+        "../TestPrograms/CoreTests/out/production/CoreTests/")
 
-    state = [["Test"], [], 0, (
-        "RentBookExceptionTest", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [["test"], [], 0, (
+        "compressTest", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
     test.run(state)
-    print(test.program_return)
-    print(test.call_trace)
-    print(utils.to_plantuml(test.call_trace, test))
+    uml_lst = utils.to_plantuml(test.call_trace, test)
+    print('\n'.join(utils.compress_plantuml(uml_lst)))
