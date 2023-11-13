@@ -1,0 +1,307 @@
+{
+  "name": "Main",
+  "access": [
+    "public",
+    "super"
+  ],
+  "typeparams": [],
+  "super": {
+    "name": "java/lang/Object",
+    "inner": null,
+    "args": [],
+    "annotations": []
+  },
+  "interfaces": [],
+  "fields": [],
+  "methods": [
+    {
+      "name": "<init>",
+      "access": [
+        "public"
+      ],
+      "typeparams": [],
+      "params": [],
+      "returns": {
+        "type": null,
+        "annotations": []
+      },
+      "code": {
+        "max_stack": 1,
+        "max_locals": 1,
+        "exceptions": [],
+        "stack_map": null,
+        "bytecode": [
+          {
+            "offset": 0,
+            "opr": "load",
+            "type": "ref",
+            "index": 0
+          },
+          {
+            "offset": 1,
+            "opr": "invoke",
+            "access": "special",
+            "method": {
+              "is_interface": false,
+              "ref": {
+                "kind": "class",
+                "name": "java/lang/Object"
+              },
+              "name": "<init>",
+              "args": [],
+              "returns": null
+            }
+          },
+          {
+            "offset": 4,
+            "opr": "return",
+            "type": null
+          }
+        ]
+      },
+      "annotations": [],
+      "exceptions": [],
+      "default": null
+    },
+    {
+      "name": "main",
+      "access": [
+        "public",
+        "static"
+      ],
+      "typeparams": [],
+      "params": [
+        {
+          "visible": true,
+          "type": {
+            "kind": "array",
+            "type": {
+              "kind": "class",
+              "name": "java/lang/String",
+              "inner": null,
+              "args": [],
+              "annotations": []
+            },
+            "annotations": []
+          },
+          "annotations": []
+        }
+      ],
+      "returns": {
+        "type": null,
+        "annotations": []
+      },
+      "code": {
+        "max_stack": 2,
+        "max_locals": 1,
+        "exceptions": [],
+        "stack_map": null,
+        "bytecode": [
+          {
+            "offset": 0,
+            "opr": "get",
+            "static": true,
+            "field": {
+              "class": "java/lang/System",
+              "name": "out",
+              "type": {
+                "kind": "class",
+                "name": "java/io/PrintStream"
+              }
+            }
+          },
+          {
+            "offset": 3,
+            "opr": "push",
+            "value": {
+              "type": "string",
+              "value": "Hello world!"
+            }
+          },
+          {
+            "offset": 5,
+            "opr": "invoke",
+            "access": "virtual",
+            "method": {
+              "ref": {
+                "kind": "class",
+                "name": "java/io/PrintStream"
+              },
+              "name": "println",
+              "args": [
+                {
+                  "kind": "class",
+                  "name": "java/lang/String"
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "offset": 8,
+            "opr": "return",
+            "type": null
+          }
+        ]
+      },
+      "annotations": [],
+      "exceptions": [],
+      "default": null
+    },
+    {
+      "name": "TestString",
+      "access": [
+        "public",
+        "static"
+      ],
+      "typeparams": [],
+      "params": [
+        {
+          "visible": true,
+          "type": {
+            "kind": "class",
+            "name": "java/lang/String",
+            "inner": null,
+            "args": [],
+            "annotations": []
+          },
+          "annotations": []
+        }
+      ],
+      "returns": {
+        "type": {
+          "base": "int"
+        },
+        "annotations": []
+      },
+      "code": {
+        "max_stack": 2,
+        "max_locals": 1,
+        "exceptions": [],
+        "stack_map": [
+          {
+            "index": 4,
+            "type": "same"
+          },
+          {
+            "index": 9,
+            "type": "same"
+          },
+          {
+            "index": 13,
+            "type": "same"
+          }
+        ],
+        "bytecode": [
+          {
+            "offset": 0,
+            "opr": "load",
+            "type": "ref",
+            "index": 0
+          },
+          {
+            "offset": 1,
+            "opr": "ifz",
+            "condition": "isnot",
+            "target": 4
+          },
+          {
+            "offset": 4,
+            "opr": "push",
+            "value": {
+              "type": "integer",
+              "value": 0
+            }
+          },
+          {
+            "offset": 5,
+            "opr": "return",
+            "type": "int"
+          },
+          {
+            "offset": 6,
+            "opr": "load",
+            "type": "ref",
+            "index": 0
+          },
+          {
+            "offset": 7,
+            "opr": "push",
+            "value": {
+              "type": "string",
+              "value": "abc"
+            }
+          },
+          {
+            "offset": 9,
+            "opr": "if",
+            "condition": "isnot",
+            "target": 9
+          },
+          {
+            "offset": 12,
+            "opr": "push",
+            "value": {
+              "type": "integer",
+              "value": 1
+            }
+          },
+          {
+            "offset": 13,
+            "opr": "return",
+            "type": "int"
+          },
+          {
+            "offset": 14,
+            "opr": "load",
+            "type": "ref",
+            "index": 0
+          },
+          {
+            "offset": 15,
+            "opr": "ifz",
+            "condition": "isnot",
+            "target": 13
+          },
+          {
+            "offset": 18,
+            "opr": "push",
+            "value": {
+              "type": "integer",
+              "value": 3
+            }
+          },
+          {
+            "offset": 19,
+            "opr": "return",
+            "type": "int"
+          },
+          {
+            "offset": 20,
+            "opr": "push",
+            "value": {
+              "type": "integer",
+              "value": 2
+            }
+          },
+          {
+            "offset": 21,
+            "opr": "return",
+            "type": "int"
+          }
+        ]
+      },
+      "annotations": [],
+      "exceptions": [],
+      "default": null
+    }
+  ],
+  "bootstrapmethods": [],
+  "enclosingmethod": null,
+  "innerclasses": [],
+  "annotations": [],
+  "version": [
+    61,
+    0
+  ]
+}

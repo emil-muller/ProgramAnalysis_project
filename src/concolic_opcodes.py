@@ -1,26 +1,9 @@
 from dataclasses import dataclass
 from z3 import *
 
-@dataclass
-class Bytecode:
-    dictionary: dict
-
-    def __getattr__(self, name):
-        return self.dictionary[name]
-
-    def __repr__(self):
-        return f"{self.opr}" + ", ".join(
-            f"{k}: {v}" for k, v in self.dictionary.items()
-            if k != "opr" and k != "offset")
-
-@dataclass
-class Method:
-    bytecode_lst: list[Bytecode]
-    method_json: dict
-
 @dataclass(frozen = True)
 class ConcolicValue:
-    concrete: int | bool
+    concrete: int | bool | str
     symbolic: ExprRef
 
     def __repr__(self):
@@ -32,6 +15,8 @@ class ConcolicValue:
             return ConcolicValue(c, BoolVal(c))
         if isinstance(c, int):
             return ConcolicValue(c, IntVal(c))
+        if isinstance(c, str):
+            return ConcolicValue(c, StringVal(c))
 
         raise Exception(f"Unknown const")
 
@@ -60,6 +45,7 @@ class ConcolicValue:
             "ne": "__ne__",
             "gt": "__gt__",
             "ge": "__ge__",
+            "isnot": "__ne__",
         }
         if copr in DICT:
             opr = DICT[copr]
@@ -97,7 +83,10 @@ class State:
 def op_ifz(interpreter, b):
     print(f"op_ifz called on {b}")
     v = interpreter.stack[-1].pop()
-    z = ConcolicValue.from_const(0)
+    if isinstance(v.concrete,str):
+        z = ConcolicValue.from_const("")
+    else:
+        z = ConcolicValue.from_const(0)
     r = ConcolicValue.compare(z, b.condition, v)
     if r.concrete:
         interpreter.stack[-1].pc = b.target
@@ -193,14 +182,15 @@ def op_goto(interpreter, b):
 
 def op_return(interpreter, b):
     print(f"op_return called on {b}")
-    if b.type is None:
-        interpreter.program_return = "Returned void"
     if len(interpreter.stack) == 1:
         (l, s, pc, invoker) = interpreter.stack[-1].unpack()
         interpreter.stack.pop()
         if len(s) > 0:
-            interpreter.program_return = s[-1]
+            interpreter.program_return = ConcolicValue(s[-1].concrete, z3.simplify(s[-1].symbolic))
         else:
-            interpreter.program_return = None
+            interpreter.program_return = "Returned void"
 
+    # Handle return from functions here
+    if b.type is None:
+        interpreter.program_return = "Returned void"
     return b
