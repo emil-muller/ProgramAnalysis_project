@@ -191,4 +191,24 @@ def concolic(target, k = 1000):
         solver.add(Not(path_constraint))
         break
 
+
+if __name__ == "__main__":
+    entry_class = utils.load_class(
+        "../TestPrograms/InterpreterTests/out/production/IntepreterTests/Main.json")
+    entry_function = utils.load_method("RentBookExceptionTest", entry_class, [])
+    program = utils.load_program(
+        "../TestPrograms/InterpreterTests/out/production/InterpreterTests")
+
+    state = [["Test"],                              # local variables
+             [],                                    # stackframes
+             0,                                     # program counter
+             ("RentBookExceptionTest", "Main", [])] # (invoker_func,invoker_class)
+
+    test = Interpreter(entry_function, False)
+    test.load_program_into_memory(program)
+
+    test.run(state)
+    print(test.program_return)
+    print(test.call_trace)
+    print(utils.to_plantuml(test.call_trace, test))
 concolic(target)

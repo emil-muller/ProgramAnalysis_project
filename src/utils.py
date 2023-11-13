@@ -7,11 +7,18 @@ def load_class(path):
         json_txt = f.read()
     return json.loads(json_txt)
 
+
 def load_method(name, class_json, params=None):
+    print("---------------------------")
+    print(class_json)
+    print("---------------------------")
+    print(params)
     possible_methods = []
     for method in class_json["methods"]:
         if method["name"] != name:
+            print("wtf")
             continue
+        print("wtf2")
         method_params = [p["type"]["base"] for p in method["params"]]
         if method_params == params:
             return method["code"]
@@ -26,7 +33,6 @@ def load_program(path):
     )
     classes_to_load = [path+"/"+file for file in json_files_in_path]
     classes = [load_class(c) for c in classes_to_load]
-
     return classes
 
 
@@ -79,7 +85,7 @@ def lookup_virtual_and_static_method(interpreter, b):
 
 def to_plantuml(call_trace, interpreter):
     uml_str = "@startuml\n"
-    for invoker,invokee, type in call_trace:
+    for invoker, invokee, type in call_trace:
         if type == "invoke":
             if invokee[0] != "<init>" or interpreter.verbose:
                 uml_str += f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}\n'

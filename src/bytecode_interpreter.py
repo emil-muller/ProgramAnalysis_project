@@ -23,7 +23,8 @@ class Interpreter:
     def log_start(self):
         if self.verbose:
             with open("log/log.txt", "a") as f:
-                f.write(f"----- Started logging for run {datetime.now()} -----\n")
+                f.write(
+                    f"----- Started logging for run {datetime.now()} -----\n")
 
     def log_state(self):
         if self.verbose:
@@ -46,7 +47,8 @@ class Interpreter:
     def log_done(self):
         if self.verbose:
             with open("log/log.txt", "a") as f:
-                f.write(f"----- Ended logging for run {datetime.now()} -----\n\n")
+                f.write(
+                    f"----- Ended logging for run {datetime.now()} -----\n\n")
 
     def run(self, f):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
         self.stack.append(f)
@@ -138,17 +140,33 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/InterpreterTests/out/production/InterpreterTests/Main.json")
-    entry_function = utils.load_method("RentBookExceptionTest", entry_class, [])
+        "../TestPrograms/simple/out/SymbolicExample.json")
+    entry_function = utils.load_method(
+        "divideByTwo", entry_class, ["int"])
     program = utils.load_program(
-        "../TestPrograms/InterpreterTests/out/production/InterpreterTests")
-
-    state = [["Test"], [], 0, (
-        "RentBookExceptionTest", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, False)
+        "../TestPrograms/simple/out/")
+    print()
+    print(entry_function)
+    print()
+    state = [[-5], [], 0, (
+        "divideByTwo", "SymbolicExample", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, True)
     test.load_program_into_memory(program)
-
     test.run(state)
-    print(test.program_return)
-    print(test.call_trace)
-    print(utils.to_plantuml(test.call_trace, test))
+
+    # entry_class = utils.load_class(
+    #    "../TestPrograms/InterpreterTests/out/production/InterpreterTests/Main.json")
+    # entry_function = utils.load_method(
+    #    "RentBookExceptionTest", entry_class, [])
+    # program = utils.load_program(
+    #    "../TestPrograms/InterpreterTests/out/production/InterpreterTests")
+
+    # state = [["Test"], [], 0, (
+    #    "RentBookExceptionTest", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    # test = Interpreter(entry_function, True)
+    # test.load_program_into_memory(program)
+
+    # test.run(state)
+    # print(test.program_return)
+    # print(test.call_trace)
+    # print(utils.to_plantuml(test.call_trace, test))
