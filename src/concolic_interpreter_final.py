@@ -21,83 +21,6 @@ class Method:
     bytecode_lst: list[Bytecode]
     method_json: dict
 
-@dataclass(frozen = True)
-class ConcolicValue:
-    concrete: int | bool
-    symbolic: ExprRef
-
-    def __repr__(self):
-        return f"{self.concrete} {self.symbolic}"
-
-    @classmethod
-    def from_const(cls, c):
-        if isinstance(c, bool):
-            return ConcolicValue(c, BoolVal(c))
-        if isinstance(c, int):
-            return ConcolicValue(c, IntVal(c))
-
-        raise Exception(f"Unknown const")
-
-    def binary(self, operant, other):
-        DICT = {
-            "sub": "__sub__",
-            "add": "__add__",
-        }
-        if operant in DICT:
-            opr = DICT[operant]
-        else:
-            if operant == "div":
-                return ConcolicValue(
-                    self.concrete // other.concrete,
-                    self.symbolic / other.symbolic,
-                )
-            raise Exception("Unknown binary operation " + operant)
-
-        return ConcolicValue(
-            getattr(self.concrete, opr)(other.concrete),
-            getattr(self.symbolic, opr)(other.symbolic)
-        )
-
-    def compare(self, copr, other):
-        DICT = {
-            "ne": "__ne__",
-            "gt": "__gt__",
-            "ge": "__ge__",
-        }
-        if copr in DICT:
-            opr = DICT[copr]
-        else:
-            raise Exception("Unknown comparison operation " + copr)
-
-        return ConcolicValue(
-            getattr(self.concrete, opr)(other.concrete),
-            getattr(self.symbolic, opr)(other.symbolic)
-        )
-
-@dataclass
-class State:
-    local_variables: dict[int, ConcolicValue]
-    stack: list[ConcolicValue]
-    pc: int
-    invokerenos: tuple[str, str]
-
-
-    def unpack(self):
-        return self.local_variables, self.stack, self.pc, self.invokerenos
-
-    def push(self, value):
-        self.stack.append(value)
-
-    def pop(self):
-        return self.stack.pop()
-
-    def load(self, index):
-        self.push(self.local_variables[index])
-
-    def store(self, index):
-        self.local_variables[index] = self.stack.pop()
-
-
 class ConcolicInterpreter:
     def __init__(self, current_method: Method, verbose: bool):
         self.current_method = current_method
@@ -143,15 +66,18 @@ class ConcolicInterpreter:
         self.log_state()
         solver = Solver()
 
-        params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
+        # Handle param types here
+        # params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
+        params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
 
         while solver.check() == sat:
             model = solver.model()
-            input = [model.eval(p, model_completion=True).as_long() for p in params]
-            # print(input)
 
-            self.stack = [State(
-                {k: ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
+            # Add as_long for ints
+            input = [model.eval(p, model_completion=True).as_string() for p in params]
+            print(input)
+            self.stack = [co.State(
+                {k: co.ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
                 [],
                 0,
                 ("invoker", "invokee")
@@ -227,10 +153,10 @@ class ConcolicInterpreter:
 if __name__ == "__main__":
     target = None
 
-    with open("/tmp/Arithmetics.json", "r") as f:
+    with open("/tmp/Main.json", "r") as f:
         result = json.load(f)
         for m in result["methods"]:
-            if m["name"] == "itDependsOnLattice3":
+            if m["name"] == "TestString":
                 target = m
                 break
     interpreter = ConcolicInterpreter(target, False)
