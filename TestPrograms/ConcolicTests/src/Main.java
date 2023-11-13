@@ -3,7 +3,7 @@ public class Main {
         System.out.println("Hello world!");
     }
 
-    public int TestString(String s){
+    public static int TestString(String s){
         if (s == null){
             return 0;
         } else if(s == "abc"){
