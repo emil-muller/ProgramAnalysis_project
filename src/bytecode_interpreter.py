@@ -139,12 +139,12 @@ class Interpreter:
 if __name__ == "__main__":
     entry_class = utils.load_class(
         "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
-    entry_function = utils.load_method("compressTest", entry_class, [])
+    entry_function = utils.load_method("nonOverlappingAlternatives", entry_class, [])
     program = utils.load_program(
         "../TestPrograms/CoreTests/out/production/CoreTests/")
 
-    state = [["test"], [], 0, (
-        "compressTest", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    state = [[1], [], 0, (
+        "nonOverlappingAlternatives", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 
