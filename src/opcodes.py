@@ -170,6 +170,15 @@ def op_ifz(interpreter, b):
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "isnot":
+        if v_1:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] = b["target"]
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] += 1
+
     return b
 
 

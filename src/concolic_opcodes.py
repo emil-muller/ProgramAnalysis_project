@@ -8,11 +8,11 @@ from concolic_types import ConcolicValue, State
 def op_ifz(interpreter, b):
     print(f"op_ifz called on {b}")
     v = interpreter.stack[-1].pop()
-    if isinstance(v.concrete,str):
+    if isinstance(v.concrete, str):
         z = ConcolicValue.from_const("")
     else:
         z = ConcolicValue.from_const(0)
-    r = ConcolicValue.compare(z, b.condition, v)
+    r = ConcolicValue.compare(v, b.condition, z)
     if r.concrete:
         interpreter.stack[-1].pc = b.target
         interpreter.path += [r.symbolic]

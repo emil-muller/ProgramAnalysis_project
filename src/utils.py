@@ -263,7 +263,7 @@ def combine_if_identical(groups, options): #groups and options must be same leng
         new_options.append(options[i])
     return new_groups
 
-def Combine_Diagrams(umls):
+def combine_diagrams(umls):
     uml_lst = []
     append_to_end = []
     #initialize index list
@@ -360,80 +360,11 @@ def Combine_Diagrams(umls):
                     difs[i].append(umls[i][indicies[i].index])
         increment_indicies(indicies)
 
-
-def Combine_Diagrams2(uml1, uml2):
-    uml_lst = []
-    index1 = 0;
-    index2 = 0;
-    while True:
-        if index1 >= len(uml1) and (not (index2 >= len(uml2))):
-            uml_lst.append(f"group Option 2")
-            uml_lst += uml2[index2: len(uml2)]
-            uml_lst.append("end")
-            return uml_lst
-        if index2 >= len(uml2) and (not (index1 >= len(uml1))):
-            uml_lst.append(f"group Option 1")
-            uml_lst += uml1[index1: len(uml1)]
-            uml_lst.append("end")
-            return uml_lst
-        if index1 >= len(uml1) or index2 >= len(uml2):
-            return uml_lst
-        if uml1[index1] == uml2[index2]: #while they are equal just increment and continue
-            uml_lst.append(uml1[index1])
-        else:
-            #They are different, now look for the next thing they have in common, and for each untill then it is optional
-            uml1_dif = [uml1[index1]]; uml2_dif = [uml2[index2]]
-            split_index1 = index1; split_index2 = index2;
-
-            while True:
-                index1 += 1; index2 += 1
-                uml1_dif.append(uml1[index1])
-                uml2_dif.append(uml2[index2])
-                if uml1_dif[index1 - split_index1] in uml2_dif:
-                    dif_index2 = uml2_dif.index(uml1_dif[index1 - split_index1])
-                    uml_lst.append(f"group Option 1")
-                    uml_lst += uml1_dif[0:index1 - split_index1]
-                    uml_lst.append("end")
-                    uml_lst.append(f"group Option 2")
-                    uml_lst += uml2_dif[0:dif_index2]
-                    uml_lst.append("end")
-                    index2 = split_index2 + dif_index2 - 1
-                    index1 -= 1
-                    break
-                elif uml2_dif[index2 - split_index2] in uml1_dif:
-                    dif_index1 = uml1_dif.index(uml2_dif[index2 - split_index2])
-                    uml_lst.append(f"group Option 2")
-                    uml_lst += uml2_dif[0:index2 - split_index2]
-                    uml_lst.append("end")
-                    uml_lst.append(f"group Option 1")
-                    uml_lst += uml1_dif[0:dif_index1]
-                    uml_lst.append("end")
-                    index1 = split_index1 + dif_index1 - 1
-                    index1 -= 1
-                    break
-                elif index1 >= len(uml1):
-                    uml_lst.append(f"group Option 1")
-                    uml_lst += uml1_dif
-                    uml_lst.append("end")
-                    uml_lst.append(f"group Option 2")
-                    uml_lst += uml2_dif
-                    uml_lst += uml2[index2 + 1: len(uml2)]
-                    uml_lst.append("end")
-                    return uml_lst
-                elif index2 >= len(uml2):
-                    uml_lst.append(f"group Option 2")
-                    uml_lst += uml2_dif
-                    uml_lst.append("end")
-                    uml_lst.append(f"group Option 1")
-                    uml_lst += uml1_dif
-                    uml_lst += uml1[index1 + 1: len(uml1)]
-                    uml_lst.append("end")
-                    return uml_lst
-        index2 += 1; index1 += 1
-
-    print(uml1)
-    print(uml2)
+def final_sequence_diagram(call_traces, interpreter):
+    plant = [to_plantuml(trace, interpreter)[1:-1] for trace in call_traces]
+    combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
+    return '\n'.join(compress_plantuml(combined_plant))
 
 if __name__ == "__main__":
-    uml = Combine_Diagrams([uml1, uml2, uml3, uml4])
+    uml = combine_diagrams([uml1, uml2, uml3, uml4])
     print('\n'.join(uml))

@@ -57,11 +57,12 @@ class ConcolicInterpreter:
         solver = Solver()
 
         # Handle param types here
-        params = [Int(f"p{i}") for i, _ in enumerate(["int"]+target["params"])]
+        params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
         # params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
 
         while solver.check() == sat:
             model = solver.model()
+            self.call_trace = []
 
             # Add as_long for ints
             input = [model.eval(p, model_completion=True).as_long() for p in params]
@@ -97,7 +98,7 @@ class ConcolicInterpreter:
             print("Couldn't step further")
             return False
         (l, s, pc, invoker) = self.stack[-1].unpack()
-        print(self.stack)
+        # print(self.stack)
         b = Bytecode(self.current_method["code"]["bytecode"][pc])
         if hasattr(self, f"op_{b.opr}"):
             return getattr(self, f"op_{b.opr}")(b)
@@ -155,15 +156,14 @@ if __name__ == "__main__":
     program_path = "../TestPrograms/CoreTests/out/production/CoreTests/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "overTheTop"
+    entry_function_name = "recursion"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 
     test = ConcolicInterpreter(entry_function, False)
     test.load_program_into_memory(program)
-    test.run(entry_function, 1000, entry_class_name, entry_function_name)
+    test.run(entry_function, 50, entry_class_name, entry_function_name)
 
-    for trace in test.call_traces:
-        print('\n'.join(utils.compress_plantuml(utils.to_plantuml(trace,test))))
-        print()
+    print(utils.final_sequence_diagram(test.call_traces, test))
+
 
