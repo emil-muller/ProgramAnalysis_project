@@ -132,6 +132,15 @@ public class Main {
         crm.processSale(vipSale);
         vipSale.complexDiscountLogic();
     }
+    private static void testComplexDiscountLogicI(int quantity) {
+        CRMSystem crm = new CRMSystem(20, 10, 20, 20, 10);
+        Customer vipCustomer = new Customer("VIPCustomer", "vip@example.com", true);
+        Product expensiveProduct = new Product("ExpensiveProduct", 500.00);
+        Sale vipSale = new Sale(vipCustomer, expensiveProduct, quantity);
+
+        crm.processSale(vipSale);
+        vipSale.complexDiscountLogic();
+    }
 
     /**
      * testAddCustomer tests adding a customer to the CRM system.

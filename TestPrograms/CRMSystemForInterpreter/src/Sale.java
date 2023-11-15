@@ -40,12 +40,12 @@ public class Sale {
     public void complexDiscountLogic() {
         if (product != null) {
             if (quantity > 10) {
-                totalAmount *= 0.85; // 15% discount for bulk purchase
+                totalAmount *= DiscountRegistry.bulkDiscount(); // 15% discount for bulk purchase
             } else if (quantity > 5) {
-                totalAmount *= 0.9; // 10% discount for moderate purchase
+                totalAmount *= DiscountRegistry.moderateDiscount(); // 10% discount for moderate purchase
             } else {
                 if (customer.isVIP()) {
-                    totalAmount *= 0.95; // 5% discount for VIP customers
+                    totalAmount *= DiscountRegistry.VIPDiscount(); // 5% discount for VIP customers
                 }
             }
         }
