@@ -11,7 +11,7 @@ def load_class(path):
 def load_method(name, class_json, params=None):
     for method in class_json["methods"]:
         if method["name"] == name:
-            return method["code"]
+            return method
     return None
 
 
@@ -44,9 +44,17 @@ def lookup_interface_method(interpreter, b, objref):
 
 def lookup_virtual_and_static_method(interpreter, b):
     method = None
-    class_name = b["method"]["ref"]["name"]
-    method_name = b["method"]["name"]
-    params_types = b["method"]["args"]
+
+    # If handle Bytecode and raw method access
+    if isinstance(b, dict):
+        class_name = b["method"]["ref"]["name"]
+        method_name = b["method"]["name"]
+        params_types = b["method"]["args"]
+    else:
+        class_name = b.method["ref"]["name"]
+        method_name = b.method["name"]
+        params_types = b.method["args"]
+
     try:
         method = load_method(
             method_name, interpreter.code_memory[class_name], params_types
