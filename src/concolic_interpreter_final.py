@@ -55,7 +55,7 @@ class ConcolicInterpreter:
         self.log_start()
         self.log_state()
         solver = Solver()
-
+        print(target)
         # Handle param types here
         params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
         # params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
@@ -106,63 +106,92 @@ class ConcolicInterpreter:
             print(f"Couldn't find attr op_{b.opr}")
             return False
 
-    def op_get(self, b):
-        return co.op_get(self, b)
+    def op_return(self, b):
+        return co.op_return(self, b)
 
-    def op_ifz(self, b):
-        return co.op_ifz(self, b)
+    def op_nop(self, b):
+        return co.op_nop(self, b)
 
     def op_load(self, b):
         return co.op_load(self, b)
 
-    def op_push(self, b):
-        return co.op_push(self, b)
+    def op_binary(self, b):
+        return co.op_binary(self, b)
 
     def op_if(self, b):
         return co.op_if(self, b)
 
-    def op_new(self, b):
-        return co.op_new(self, b)
+    def op_ifz(self, b):
+        return co.op_ifz(self, b)
 
     def op_store(self, b):
         return co.op_store(self, b)
 
-    def op_binary(self, b):
-        return co.op_binary(self, b)
-
-
     def op_incr(self, b):
         return co.op_incr(self, b)
 
+    def op_push(self, b):
+        return co.op_push(self, b)
+
+    def op_dup(self, b):
+        return co.op_dup(self, b)
+
+    def op_dup_x1(self, b):
+        return co.op_dup_x1(self, b)
+
+    def op_dup_x2(self, b):
+        return co.op_dup_x2(self, b)
 
     def op_goto(self, b):
         return co.op_goto(self, b)
 
+    def op_array_load(self, b):
+        return co.op_array_load(self, b)
+
+    def op_arraylength(self, b):
+        return co.op_arraylength(self, b)
+
+    def op_put(self, b):
+        return co.op_put(self, b)
+
+    def op_get(self, b):
+        return co.op_get(self, b)
+
+    def op_new(self, b):
+        return co.op_new(self, b)
+
+    def op_newarray(self, b):
+        return co.op_newarray(self, b)
+
+    def op_array_store(self, b):
+        return co.op_array_store(self, b)
+
     def op_invoke(self, b):
         return co.op_invoke(self, b)
 
-    def op_return(self, b):
-        return co.op_return(self, b)
+    def op_pop(self, b):
+        return co.op_pop(self, b)
 
-    def op_dup(self, b):
-        return co.op_dup(self, b)
+    def op_cast(self, b):
+        return co.op_cast(self, b)
 
 
     def op_put(self, b):
         return co.op_put(self, b)
 
+
 if __name__ == "__main__":
-    entry_class_name = "classA"
-    program_path = "../TestPrograms/CoreTests/out/production/CoreTests/"
+    entry_class_name = "Main"
+    program_path = "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "recursion"
+    entry_function_name = "testComplexDiscountLogicI"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 
     test = ConcolicInterpreter(entry_function, False)
     test.load_program_into_memory(program)
-    test.run(entry_function, 50, entry_class_name, entry_function_name)
+    test.run(entry_function, 100000, entry_class_name, entry_function_name)
 
     print(utils.final_sequence_diagram(test.call_traces, test))
 

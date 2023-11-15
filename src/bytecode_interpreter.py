@@ -155,18 +155,12 @@ if __name__ == "__main__":
         "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
-
-    # entry_class = utils.load_class(
-    #     "../TestPrograms/CoreTests/out/production/classA.json")
-    # entry_function = utils.load_method("compressTest", entry_class, [])
-    # program = utils.load_program(
-    #     "../TestPrograms/CoreTests/out/production/")
-    #
-    # state = [[1], [], 0, (
-    #     "classA", "compressTest", [1])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    # test = Interpreter(entry_function, False)
-    # test.load_program_into_memory(program)
-
     test.run(state)
-    uml_lst = utils.to_plantuml(test.call_trace, test)
-    print('\n'.join(utils.compress_plantuml(uml_lst)))
+    call_traces = []
+    call_traces.append(test.call_trace)
+    test.call_trace = []
+    state = [[12], [], 0, (
+        "testComplexDiscountLogicI", "Main", [])]
+    test.run(state)
+    call_traces.append(test.call_trace)
+    print(utils.final_sequence_diagram(call_traces, test))

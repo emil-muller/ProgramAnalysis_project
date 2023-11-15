@@ -285,7 +285,7 @@ def combine_diagrams(umls):
                 indicies.remove(index)
                 umls.remove(uml)
             if umls: # only add if some are still left
-                uml_lst.append(f"group option(s) [{','.join([f'{index.option}' for index in indicies])}]")
+                uml_lst.append(f"group Option(s) [{','.join([f'{index.option}' for index in indicies])}]")
                 append_to_end.append("end")
 
         if not umls: # No more to merge so we are done
@@ -340,7 +340,7 @@ def combine_diagrams(umls):
                         indicies.remove(index)
                         umls.remove(uml)
                     if umls:  # only add if some are still left
-                        uml_lst.append(f"group option(s) [{','.join([f'{index.option}' for index in indicies])}]")
+                        uml_lst.append(f"group Option(s) [{','.join([f'{index.option}' for index in indicies])}]")
                         append_to_end.append("end")
                     # Reset diffs as the holdout might be in the deleted
                     difs = []
