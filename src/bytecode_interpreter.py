@@ -61,7 +61,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack[-1])
+        print(self.stack)
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["code"]["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     program = utils.load_program(
         "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
     state = [[1], [], 0, (
-        "testComplexDiscountLogicI", "Main", [3])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
 

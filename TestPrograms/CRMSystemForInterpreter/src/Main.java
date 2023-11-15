@@ -9,11 +9,11 @@
  */
 public class Main {
     public static void main(String[] args) {
-
-        System.out.println("Hello world!");
-        for(int i = 1; i < 8; i++){
-            CallTests(i);
-        }
+        testComplexDiscountLogicI(3);
+//        System.out.println("Hello world!");
+//        for(int i = 1; i < 8; i++){
+//            CallTests(i);
+//        }
     }
 
     public static void CallTests(int test){
