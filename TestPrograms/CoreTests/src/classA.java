@@ -56,6 +56,7 @@ public class classA {
                 }
             }
         }
+        classC.doNothing();
     }
 
     public static void indirectImpossibleCase(int x){
