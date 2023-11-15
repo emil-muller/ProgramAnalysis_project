@@ -1,25 +1,8 @@
 from z3 import *
-from dataclasses import dataclass
-import json
+from concolic_types import Method, Bytecode
 import datetime
 import concolic_opcodes as co
-
-@dataclass
-class Bytecode:
-    dictionary: dict
-
-    def __getattr__(self, name):
-        return self.dictionary[name]
-
-    def __repr__(self):
-        return f"{self.opr}" + ", ".join(
-            f"{k}: {v}" for k, v in self.dictionary.items()
-            if k != "opr" and k != "offset")
-
-@dataclass
-class Method:
-    bytecode_lst: list[Bytecode]
-    method_json: dict
+import utils
 
 class ConcolicInterpreter:
     def __init__(self, current_method: Method, verbose: bool):
@@ -33,6 +16,7 @@ class ConcolicInterpreter:
 
         # This list contains the information needed for the sequence diagram
         self.call_trace = []
+        self.call_traces = []
 
     def log_start(self):
         if self.verbose:
@@ -61,26 +45,33 @@ class ConcolicInterpreter:
         if self.verbose:
             with open("log/log.txt", "a") as f:
                 f.write(f"----- Ended logging for run {datetime.now()} -----\n\n")
-    def run(self, step_limit: int):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
+
+    def load_program_into_memory(self, prog):
+        for p in prog:
+            class_name = p["name"]
+            self.code_memory[class_name] = p
+
+    def run(self, target: dict, step_limit: int, class_name: str, function_name: str):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
         self.log_start()
         self.log_state()
         solver = Solver()
 
         # Handle param types here
-        # params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
-        params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
+        params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
+        # params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
 
         while solver.check() == sat:
             model = solver.model()
+            self.call_trace = []
 
             # Add as_long for ints
-            input = [model.eval(p, model_completion=True).as_string() for p in params]
+            input = [model.eval(p, model_completion=True).as_long() for p in params]
             print(input)
             self.stack = [co.State(
                 {k: co.ConcolicValue(i, p) for k, (i, p) in enumerate(zip(input, params))},
                 [],
                 0,
-                ("invoker", "invokee")
+                (function_name, class_name, [])
             )]
 
             #Path constraints
@@ -99,7 +90,7 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
-
+            self.call_traces.append(self.call_trace)
         self.log_done()
 
     def step(self):
@@ -147,17 +138,32 @@ class ConcolicInterpreter:
     def op_goto(self, b):
         return co.op_goto(self, b)
 
+    def op_invoke(self, b):
+        return co.op_invoke(self, b)
+
     def op_return(self, b):
         return co.op_return(self, b)
 
-if __name__ == "__main__":
-    target = None
+    def op_dup(self, b):
+        return co.op_dup(self, b)
 
-    with open("/tmp/Main.json", "r") as f:
-        result = json.load(f)
-        for m in result["methods"]:
-            if m["name"] == "TestString":
-                target = m
-                break
-    interpreter = ConcolicInterpreter(target, False)
-    interpreter.run(1000)
+
+    def op_put(self, b):
+        return co.op_put(self, b)
+
+if __name__ == "__main__":
+    entry_class_name = "classA"
+    program_path = "../TestPrograms/CoreTests/out/production/CoreTests/"
+    entry_class = utils.load_class(
+        f"{program_path}{entry_class_name}.json")
+    entry_function_name = "recursion"
+    entry_function = utils.load_method(entry_function_name, entry_class, [])
+    program = utils.load_program(program_path)
+
+    test = ConcolicInterpreter(entry_function, False)
+    test.load_program_into_memory(program)
+    test.run(entry_function, 50, entry_class_name, entry_function_name)
+
+    print(utils.final_sequence_diagram(test.call_traces, test))
+
+

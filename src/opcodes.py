@@ -162,6 +162,23 @@ def op_ifz(interpreter, b):
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "is":
+        if v_1:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "isnot":
+        if v_1:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] = b["target"]
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] += 1
+
     return b
 
 
@@ -225,6 +242,20 @@ def op_dup(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+def op_dup_x1(interpreter, b):
+    print(f"op_dup_x1 called on {b}")
+    v = interpreter.stack[-1][OPERANDSTACK][-1]
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-2] + [v] + interpreter.stack[-1][OPERANDSTACK][-2:]
+    interpreter.stack[-1][PC] += 1
+    return b
+
+
+def op_dup_x2(interpreter, b):
+    print(f"op_dup_x2 called on {b}")
+    v = interpreter.stack[-1][OPERANDSTACK][-1]
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-3] + [v] + interpreter.stack[-1][OPERANDSTACK][-3:]
+    interpreter.stack[-1][PC] += 1
+    return b
 
 def op_goto(interpreter, b):
     # Note this only works for gotos within the routine
@@ -386,9 +417,23 @@ def op_invoke(interpreter, b):
     return b
 
 
-def op_pop(self, b):
+def op_pop(interpreter, b):
     print(f"op_pop called on {b}")
     n = b["words"]
-    self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
-    self.stack[-1][PC] += 1
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
+    interpreter.stack[-1][PC] += 1
+    return b
+
+
+def op_cast(interpreter, b):
+    print(f"op_cast called on {b}")
+    to_type = b["to"]
+    val = interpreter.stack[-1][OPERANDSTACK].pop()
+    converted_val = val # In case we døn't hændle cånværsion
+    if to_type in ["float", "double"]:
+        converted_val = float(val)
+    if to_type in ["int", "long"]:
+        converted_val = int(val)
+    interpreter.stack[-1][OPERANDSTACK].append(converted_val)
+    interpreter.stack[-1][PC] += 1
     return b
