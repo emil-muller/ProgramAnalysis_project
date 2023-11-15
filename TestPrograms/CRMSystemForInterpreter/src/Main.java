@@ -9,11 +9,11 @@
  */
 public class Main {
     public static void main(String[] args) {
-
-        System.out.println("Hello world!");
-        for(int i = 1; i < 8; i++){
-            CallTests(i);
-        }
+        testComplexDiscountLogicI(3);
+//        System.out.println("Hello world!");
+//        for(int i = 1; i < 8; i++){
+//            CallTests(i);
+//        }
     }
 
     public static void CallTests(int test){
@@ -128,6 +128,15 @@ public class Main {
         Customer vipCustomer = new Customer("VIPCustomer", "vip@example.com", true);
         Product expensiveProduct = new Product("ExpensiveProduct", 500.00);
         Sale vipSale = new Sale(vipCustomer, expensiveProduct, 3);
+
+        crm.processSale(vipSale);
+        vipSale.complexDiscountLogic();
+    }
+    private static void testComplexDiscountLogicI(int quantity) {
+        CRMSystem crm = new CRMSystem(20, 10, 20, 20, 10);
+        Customer vipCustomer = new Customer("VIPCustomer", "vip@example.com", true);
+        Product expensiveProduct = new Product("ExpensiveProduct", 500.00);
+        Sale vipSale = new Sale(vipCustomer, expensiveProduct, quantity);
 
         crm.processSale(vipSale);
         vipSale.complexDiscountLogic();

@@ -61,7 +61,7 @@ class Interpreter:
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack[-1])
+        print(self.stack)
         (l, s, pc, invoker) = self.stack[-1]
         b = self.program["code"]["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
@@ -147,15 +147,25 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
-    entry_function = utils.load_method("loopTest", entry_class, [])
+        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/Main.json")
+    entry_function = utils.load_method("testComplexDiscountLogicI", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/CoreTests/out/production/CoreTests/")
-
-    state = [[6], [], 0, (
-        "loopTest", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
+    state = [[1], [], 0, (
+        "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
+
+    # entry_class = utils.load_class(
+    #     "../TestPrograms/CoreTests/out/production/classA.json")
+    # entry_function = utils.load_method("compressTest", entry_class, [])
+    # program = utils.load_program(
+    #     "../TestPrograms/CoreTests/out/production/")
+    #
+    # state = [[1], [], 0, (
+    #     "classA", "compressTest", [1])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    # test = Interpreter(entry_function, False)
+    # test.load_program_into_memory(program)
 
     test.run(state)
     uml_lst = utils.to_plantuml(test.call_trace, test)
