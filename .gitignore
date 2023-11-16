@@ -6,3 +6,5 @@ vendor
 *log.txt*
 .idea
 *.class
+/TestPrograms/ConcolicTests/ConcolicTests.iml
+/TestPrograms/CRMSystemForInterpreter/CRMSystemForInterpreter.iml
