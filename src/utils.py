@@ -82,15 +82,21 @@ def lookup_virtual_and_static_method(interpreter, b):
     return method
 
 
-def to_plantuml(call_trace, interpreter):
+def to_plantuml(call_trace, params, interpreter, out_params):
     uml_lst = ["@startuml"]
+    i = 0;
     for invoker, invokee, type in call_trace:
         if type == "invoke":
             if invokee[0] != "<init>" or interpreter.verbose:
+                if i in params:
+                    out_params[i] = params[i]
                 uml_lst.append(f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}')
         elif type == "return":
             if invoker[0] != "<init>" or interpreter.verbose:
+                if i in params:
+                    out_params[i] = params[i]
                 uml_lst.append(f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}')
+        i += 1
     uml_lst.append("@enduml")
 
     return uml_lst
@@ -370,8 +376,15 @@ def combine_diagrams(umls):
                     difs[i].append(umls[i][indicies[i].index])
         increment_indicies(indicies)
 
-def final_sequence_diagram(call_traces, interpreter):
-    plant = [to_plantuml(trace, interpreter)[1:-1] for trace in call_traces]
+def final_sequence_diagram(call_traces, call_trace_params, interpreter):
+    plant = []
+    plant_params = []
+    for i in range(0, len(call_traces)):
+        plant_param = {}
+        plant.append(to_plantuml(call_traces[i], call_trace_params[i], interpreter, plant_param)[1:-1])
+        plant_params.append(plant_param)
+    print(plant_params)
+    #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
     combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
     return '\n'.join(compress_plantuml(combined_plant))
 

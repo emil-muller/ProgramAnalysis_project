@@ -16,7 +16,9 @@ class ConcolicInterpreter:
 
         # This list contains the information needed for the sequence diagram
         self.call_trace = []
+        self.param_dict_for_call_trace = {}
         self.call_traces = []
+        self.param_dict_for_call_traces = []
 
     def log_start(self):
         if self.verbose:
@@ -64,6 +66,7 @@ class ConcolicInterpreter:
         while solver.check() == sat:
             model = solver.model()
             self.call_trace = []
+            self.param_dict_for_call_trace = {}
             self.current_method = initial_method
             # Add as_long for ints
             input = [model.eval(p, model_completion=True).as_long() for p in params]
@@ -91,7 +94,10 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
+            print(self.call_trace)
+            print(self.param_dict_for_call_trace)
             self.call_traces.append(self.call_trace)
+            self.param_dict_for_call_traces.append(self.param_dict_for_call_trace)
         self.log_done()
 
     def step(self):
@@ -195,6 +201,6 @@ if __name__ == "__main__":
     test.load_program_into_memory(program)
     test.run(entry_function, 100000, entry_class_name, entry_function_name)
 
-    print(utils.final_sequence_diagram(test.call_traces, test))
+    print(utils.final_sequence_diagram(test.call_traces, test.param_dict_for_call_traces,  test))
 
 

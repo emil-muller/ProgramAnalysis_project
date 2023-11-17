@@ -223,12 +223,12 @@ def op_return(interpreter, b):
     else:
         # Add return to calltrace
         interpreter.call_trace.append((interpreter.stack[-1].invokerenos, interpreter.stack[-2].invokerenos, "return"))
-
         # pop stackframe and push function return value to previous stackframes operand stack
         (l, s, pc, invoker) = interpreter.stack[-1].unpack()
         interpreter.stack.pop()
         if len(s) > 0:
             interpreter.stack[-1].stack.append(s[-1])
+            interpreter.param_dict_for_call_trace[len(interpreter.call_trace) - 1] = s[-1]
         # Set program to invokee invoker and resume execution
         interpreter.current_method = utils.load_method(
             interpreter.stack[-1].invokerenos[0],
@@ -269,7 +269,7 @@ def op_invoke(interpreter, b):
 
     # Add call to calltrace
     interpreter.call_trace.append((interpreter.stack[-2].invokerenos, interpreter.stack[-1].invokerenos, "invoke"))
-
+    interpreter.param_dict_for_call_trace[len(interpreter.call_trace) - 1] = function_params
     # God forgive me for this sin
     method = None
     if b.access == "static":
