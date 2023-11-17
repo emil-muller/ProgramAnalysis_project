@@ -64,7 +64,7 @@ class ConcolicInterpreter:
         while solver.check() == sat:
             model = solver.model()
             self.call_trace = []
-
+            self.current_method = initial_method
             # Add as_long for ints
             input = [model.eval(p, model_completion=True).as_long() for p in params]
             print(input)

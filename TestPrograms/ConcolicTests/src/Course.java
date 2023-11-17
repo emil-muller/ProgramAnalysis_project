@@ -11,9 +11,10 @@ public class Course {
     }
 
     public static boolean ValidateCourse(Course course){
-        if (course.getEcts() > 10){
+        int ects = course.getEcts();
+        if (ects > 10){
             return false;
-        } else if (course.getEcts() < 0) {
+        } else if (ects < 0) {
             return false;
         }
         return true;

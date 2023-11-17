@@ -325,15 +325,25 @@ def combine_diagrams(umls):
                 #again check if one or more is finished
                 deleted_options = False
                 indicies_to_be_deleted = []
+                groups = []
+                indexoptions = []
                 for i in range(0, len(umls)):  # remove indicies that are done
                     if indicies[i].index >= len(umls[i]):
+                        group = []
                         deleted_options = True
-                        uml_lst.append(f"group Option {indicies[i].option}")
-                        uml_lst += difs[i]
-                        uml_lst.append("end")
+                        group.append(f"group Option {indicies[i].option}")
+                        group += difs[i]
+                        group.append("end")
+                        groups.append(group)
+                        indexoptions.append(indicies[i].option)
+                        #uml_lst.append(f"group Option {indicies[i].option}")
+                        #uml_lst += difs[i]
+                        #uml_lst.append("end")
                         #TODO: collapse deleted, they might be the same
                         indicies_to_be_deleted.append((indicies[i], umls[i]))
-
+                groups = combine_if_identical(groups, indexoptions)
+                for group in groups:
+                    uml_lst += group
                 if deleted_options:  # create new group with remaining indicies
                     for i in indicies_to_be_deleted:
                         (index, uml) = i
