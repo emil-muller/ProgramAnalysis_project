@@ -146,26 +146,26 @@ class Interpreter:
 
 
 if __name__ == "__main__":
-    entry_class = utils.load_class(
-        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/Main.json")
-    entry_function = utils.load_method("testComplexDiscountLogicI", entry_class, [])
-    program = utils.load_program(
-        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
-    state = [[1], [], 0, (
-        "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
-    test = Interpreter(entry_function, False)
-    test.load_program_into_memory(program)
-
     # entry_class = utils.load_class(
-    #     "../TestPrograms/CoreTests/out/production/classA.json")
-    # entry_function = utils.load_method("compressTest", entry_class, [])
+    #     "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/Main.json")
+    # entry_function = utils.load_method("testComplexDiscountLogicI", entry_class, [])
     # program = utils.load_program(
-    #     "../TestPrograms/CoreTests/out/production/")
-    #
+    #     "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
     # state = [[1], [], 0, (
-    #     "classA", "compressTest", [1])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    #     "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     # test = Interpreter(entry_function, False)
     # test.load_program_into_memory(program)
+
+    entry_class = utils.load_class(
+        "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
+    entry_function = utils.load_method("nestedIf", entry_class, [])
+    program = utils.load_program(
+        "../TestPrograms/CoreTests/out/production/CoreTests/")
+
+    state = [[4], [], 0, (
+        "classA", "nestedIf", [1])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+    test = Interpreter(entry_function, False)
+    test.load_program_into_memory(program)
 
     test.run(state)
     uml_lst = utils.to_plantuml(test.call_trace, test)
