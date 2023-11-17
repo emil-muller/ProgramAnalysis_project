@@ -52,6 +52,7 @@ class ConcolicInterpreter:
             self.code_memory[class_name] = p
 
     def run(self, target: dict, step_limit: int, class_name: str, function_name: str):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
+        initial_method = self.current_method
         self.log_start()
         self.log_state()
         solver = Solver()
@@ -98,7 +99,8 @@ class ConcolicInterpreter:
             print("Couldn't step further")
             return False
         (l, s, pc, invoker) = self.stack[-1].unpack()
-        # print(self.stack)
+        #print(self.stack)
+        #print(self.current_method)
         b = Bytecode(self.current_method["code"]["bytecode"][pc])
         if hasattr(self, f"op_{b.opr}"):
             return getattr(self, f"op_{b.opr}")(b)
@@ -182,10 +184,10 @@ class ConcolicInterpreter:
 
 if __name__ == "__main__":
     entry_class_name = "Main"
-    program_path = "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/"
+    program_path = "../TestPrograms/ConcolicTests/out/production/ConcolicTests/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "testComplexDiscountLogicI"
+    entry_function_name = "RegisterCourse"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 

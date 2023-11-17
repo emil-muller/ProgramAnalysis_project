@@ -66,6 +66,10 @@ def op_new(interpreter, b):
         interpreter.program_return = "AssertionError"
         return None  # Will terminate current execution
 
+    if b.dictionary["class"] == "java/lang/Exception":
+        interpreter.program_return = "Exception thrown"
+        return None  # Will terminate current execution
+
     class_name = f'{b.dictionary["class"]}_{uuid.uuid4()}'
 
     interpreter.memory[class_name] = {"class": b.dictionary["class"]}
@@ -172,7 +176,7 @@ def op_arraylength(interpreter, b):
     arr_ref = interpreter.stack[-1].stack.pop().concrete
 
     arr_len = len(interpreter.memory[arr_ref])
-    interpreter.stack[-1].stack.append(arr_len)
+    interpreter.stack[-1].stack.append(ConcolicValue.from_const(arr_len))
     interpreter.stack[-1].pc += 1
     return b
 
@@ -199,6 +203,9 @@ def op_array_store(interpreter, b):
     index = interpreter.stack[-1].stack.pop().concrete
     arr_ref = interpreter.stack[-1].stack.pop().concrete
 
+    if len(interpreter.memory[arr_ref]) <= index:
+        interpreter.program_return = "Index out of bounds"
+        return None #will terminate current run
     interpreter.memory[arr_ref][index] = val
 
     interpreter.stack[-1].pc += 1
