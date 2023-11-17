@@ -11,7 +11,7 @@ def load_class(path):
 def load_method(name, class_json, params=None):
     for method in class_json["methods"]:
         if method["name"] == name:
-            return method["code"]
+            return method
     return None
 
 
@@ -44,9 +44,17 @@ def lookup_interface_method(interpreter, b, objref):
 
 def lookup_virtual_and_static_method(interpreter, b):
     method = None
-    class_name = b["method"]["ref"]["name"]
-    method_name = b["method"]["name"]
-    params_types = b["method"]["args"]
+
+    # If handle Bytecode and raw method access
+    if isinstance(b, dict):
+        class_name = b["method"]["ref"]["name"]
+        method_name = b["method"]["name"]
+        params_types = b["method"]["args"]
+    else:
+        class_name = b.method["ref"]["name"]
+        method_name = b.method["name"]
+        params_types = b.method["args"]
+
     try:
         method = load_method(
             method_name, interpreter.code_memory[class_name], params_types
@@ -138,3 +146,235 @@ def compress_plantuml(uml_lst):
                         return compress_plantuml(new_uml_lst)
                     break
     return uml_lst
+
+
+
+# Welcome to the uml combining show, proceed at your own paryl
+
+uml1 = [
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classC" : Do1',
+'"classA" <-- "classC" : Do1',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing']
+
+uml2 = [
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classD" : Do2',
+'"classA" <-- "classD" : Do2',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classX" -> "classY" : doNothing',
+'"classX" <-- "classY" : doNothing']
+
+uml3 = [
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classD" : Do2',
+'"classA" <-- "classD" : Do2',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classT" -> "classQ" : doNothing',
+'"classT" <-- "classQ" : doNothing',]
+
+uml4 = [
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classD" : Do2',
+'"classA" <-- "classD" : Do2',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classA" -> "classB" : doNothing',
+'"classA" <-- "classB" : doNothing',
+
+'"classE" -> "classR" : doNothing',
+'"classE" <-- "classR" : doNothing',]
+
+class IndexOption:
+    def __init__(self, option):
+        self. index = 0
+        self.option = option
+
+    def copy(self):
+        new_index_option = IndexOption(self.option)
+        new_index_option.index = self.index
+        return new_index_option
+
+def all_match(indicies, umls):
+    first_one = umls[0][indicies[0].index]
+    for i in range(0, len(umls)):
+        if umls[i][indicies[i].index] != first_one:
+            return False
+    return True
+
+
+def increment_indicies(indicies):
+    for index in indicies:
+        index.index += 1
+
+
+def all_contains(line, difs):
+    for i in range(0,len(difs)):
+        if line not in difs[i]:
+            return False
+    return True
+
+
+def combine_if_identical(groups, options): #groups and options must be same length and they will be, trust me
+    new_groups = []
+    new_options = []
+    for i in range(0,len(groups)):
+        for k in range(0,len(groups)):
+            if not groups[i][0] == groups[k][0] and groups[i][1:-1] == groups[k][1:-1]:
+                new_groups.append([f"group Options {options[i]}, {options[k]}"])
+                new_groups[i] += groups[i][1:-1]
+                new_groups[i].append("end")
+                new_options.append(f"{options[i]}, {options[k]}")
+                del(groups[k]) # remove the group k now merged with i, here i < k always
+                del(options[k])
+                for j in range(i + 1, len(groups)): # we have combined add remaining groups and call recursively
+                    new_options.append(options[j])
+                    new_groups.append(groups[j])
+                return combine_if_identical(new_groups, new_options)
+        #no merge was found for groups[i]
+        new_groups.append(groups[i])
+        new_options.append(options[i])
+    return new_groups
+
+def combine_diagrams(umls):
+    uml_lst = []
+    append_to_end = []
+    #initialize index list
+    indicies = []
+    for i in range(0, len(umls)):
+        indicies.append(IndexOption(i))
+
+    while True:
+        deleted_options = False
+        indicies_to_be_deleted = []
+        for i in range(0, len(umls)): # remove indicies that are done
+            if indicies[i].index >= len(umls[i]):
+                indicies_to_be_deleted.append((indicies[i], umls[i]))
+                deleted_options = True
+
+        if deleted_options: # create new group with remaining indicies
+            for i in indicies_to_be_deleted:
+                (index, uml) = i
+                indicies.remove(index)
+                umls.remove(uml)
+            if umls: # only add if some are still left
+                uml_lst.append(f"group Option(s) [{','.join([f'{index.option}' for index in indicies])}]")
+                append_to_end.append("end")
+
+        if not umls: # No more to merge so we are done
+            uml_lst += append_to_end
+            return uml_lst
+
+        if all_match(indicies, umls): # all match so append next call
+            uml_lst.append(umls[0][indicies[0].index])
+        else: #they dont match
+            difs = []
+            for i in range(0, len(umls)):
+                difs.append([umls[i][indicies[i].index]])
+            split_indicies = [index.copy() for index in indicies]
+
+            while True:
+                dont_break = False
+                for i in range(0, len(difs)): #if any has gotten a call all contains, collapse to options
+                    if all_contains(difs[i][-1], difs): # found the common one
+                        groups = []
+                        for k in range(0, len(difs)):
+                            diff_index = difs[k].index(difs[k][-1]) # get index for common item
+                            groups.append([f"group Option {indicies[k].option}"])
+                            groups[k] += difs[k][0 : diff_index]
+                            groups[k].append("end")
+                            indicies[k].index = split_indicies[k].index + diff_index - 1 # Continue after shared item
+                        groups = combine_if_identical(groups, [f"{index.option}" for index in indicies])
+                        for group in groups:
+                            uml_lst += group
+                        break
+                else:
+                    dont_break = True
+                if not dont_break:
+                    break # funky python logic
+
+                increment_indicies(indicies)
+
+                #again check if one or more is finished
+                deleted_options = False
+                indicies_to_be_deleted = []
+                groups = []
+                indexoptions = []
+                for i in range(0, len(umls)):  # remove indicies that are done
+                    if indicies[i].index >= len(umls[i]):
+                        group = []
+                        deleted_options = True
+                        group.append(f"group Option {indicies[i].option}")
+                        group += difs[i]
+                        group.append("end")
+                        groups.append(group)
+                        indexoptions.append(indicies[i].option)
+                        #uml_lst.append(f"group Option {indicies[i].option}")
+                        #uml_lst += difs[i]
+                        #uml_lst.append("end")
+                        #TODO: collapse deleted, they might be the same
+                        indicies_to_be_deleted.append((indicies[i], umls[i]))
+                groups = combine_if_identical(groups, indexoptions)
+                for group in groups:
+                    uml_lst += group
+                if deleted_options:  # create new group with remaining indicies
+                    for i in indicies_to_be_deleted:
+                        (index, uml) = i
+                        indicies.remove(index)
+                        umls.remove(uml)
+                    if umls:  # only add if some are still left
+                        uml_lst.append(f"group Option(s) [{','.join([f'{index.option}' for index in indicies])}]")
+                        append_to_end.append("end")
+                    # Reset diffs as the holdout might be in the deleted
+                    difs = []
+                    for i in range(0, len(umls)):
+                        indicies[i].index = split_indicies[i].index
+                        difs.append([umls[i][indicies[i].index]])
+
+                if not umls:  # No more to merge so we are done
+                    uml_lst += append_to_end
+                    return uml_lst
+
+                if len(umls) == 1: # special case if all but one has been finished
+                    indicies[0].index -= 1 #it was incremented by one for diff that is now to be ignored
+                    break
+
+                for i in range(0, len(umls)):
+                    difs[i].append(umls[i][indicies[i].index])
+        increment_indicies(indicies)
+
+def final_sequence_diagram(call_traces, interpreter):
+    plant = [to_plantuml(trace, interpreter)[1:-1] for trace in call_traces]
+    combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
+    return '\n'.join(compress_plantuml(combined_plant))
+
+if __name__ == "__main__":
+    uml = combine_diagrams([uml1, uml2, uml3, uml4])
+    print('\n'.join(uml))

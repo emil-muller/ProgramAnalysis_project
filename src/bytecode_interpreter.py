@@ -54,16 +54,16 @@ class Interpreter:
         self.log_state()
         while self.step():
             self.log_state()
-            continue
+            # continue
         self.log_done()
 
     def step(self):
         if not self.stack:
             print("Couldn't step further")
             return False
-        print(self.stack[-1])
+        print(self.stack)
         (l, s, pc, invoker) = self.stack[-1]
-        b = self.program["bytecode"][pc]
+        b = self.program["code"]["bytecode"][pc]
         if hasattr(self, f"op_{b['opr']}"):
             return getattr(self, f"op_{b['opr']}")(b)
         else:
@@ -105,6 +105,12 @@ class Interpreter:
     def op_dup(self, b):
         return op.op_dup(self, b)
 
+    def op_dup_x1(self, b):
+        return op.op_dup_x1(self, b)
+
+    def op_dup_x2(self, b):
+        return op.op_dup_x2(self, b)
+
     def op_goto(self, b):
         return op.op_goto(self, b)
 
@@ -135,19 +141,26 @@ class Interpreter:
     def op_pop(self, b):
         return op.op_pop(self, b)
 
+    def op_cast(self, b):
+        return op.op_cast(self, b)
+
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
-    entry_function = utils.load_method("compressTest", entry_class, [])
+        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/Main.json")
+    entry_function = utils.load_method("testComplexDiscountLogicI", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/CoreTests/out/production/CoreTests/")
-
-    state = [["test"], [], 0, (
-        "compressTest", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
+    state = [[1], [], 0, (
+        "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
-
     test.run(state)
-    uml_lst = utils.to_plantuml(test.call_trace, test)
-    print('\n'.join(utils.compress_plantuml(uml_lst)))
+    call_traces = []
+    call_traces.append(test.call_trace)
+    test.call_trace = []
+    state = [[12], [], 0, (
+        "testComplexDiscountLogicI", "Main", [])]
+    test.run(state)
+    call_traces.append(test.call_trace)
+    print(utils.final_sequence_diagram(call_traces, test))

@@ -1,7 +1,13 @@
 # Installation
 
-No dependencies for application. 
-For testing run: `pip install -U pytest`
+Invoke a virtual environment:
+```bash
+virtualenv .env && . .env/bin/activate
+```
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
 # Test
 All tests can be run with pytest like

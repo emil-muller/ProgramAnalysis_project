@@ -95,6 +95,13 @@ public class classA {
         }
     }
 
+    public static void simpleloopTest2(){
+        for(int i = 0; i<10; i++){
+            classB.doNothing();
+            classC.doNothing();
+        }
+    }
+
     public static void loopTest(){
         for(int i = 0; i<10; i++){
             classB.loopTest(i);
@@ -114,6 +121,19 @@ public class classA {
         classB.doNothing();
     }
 
+    public static void compressTest2(){
+        classB.doNothing();
+        classC.doNothing();
+        classB.doNothing();
+        classC.doNothing();
+        classB.doNothing();
+        classC.doNothing();
+        classB.doNothing();
+        classC.doNothing();
+        classB.doNothing();
+        classC.doNothing();
+    }
+
     public static void instanceExample(){
         classB b1 = new classB();
         classB b2 = new classB();
@@ -130,5 +150,28 @@ public class classA {
         b1.instanceCallC(c1);
         b2.instanceCallC(c1);
         c2.instanceDoNothing();
+    }
+
+    public static void methodInIf(){
+        classB.doNothing();
+        if (classB.isTrue(true)){
+            classC.doNothing();
+        }
+    }
+
+    public static void redundantBranching(int x){
+        if(x<10){
+            classB.redundantBranching(x);
+        }else{
+            classC.doNothing();
+        }
+    }
+
+    public static void unnecessaryBranching(int x){
+        if(x<10){
+            classB.doNothing();
+        }else{
+            classB.doNothing();
+        }
     }
 }

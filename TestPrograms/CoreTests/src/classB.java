@@ -43,11 +43,23 @@ public class classB {
         }
     }
 
+    public static boolean isTrue(boolean b){
+        return b;
+    }
+
     public classB(){}
 
     public void instanceDoNothing(){}
 
     public void instanceCallC(classC c){
         c.instanceDoNothing();
+    }
+
+    public static void redundantBranching(int x){
+        if(x<10){
+            classC.doNothing();
+        }else{
+            classB.doNothing();
+        }
     }
 }

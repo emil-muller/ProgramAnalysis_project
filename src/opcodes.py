@@ -8,30 +8,30 @@ PC = 2
 INVOKEDBY = 3
 
 
-def op_return(intepreter, b):
+def op_return(interpreter, b):
     # Note we should perhaps use the class pop function
     # but the slides contains errors, so I'm not sure
     print(f"op_return called on {b}")
 
-    if len(intepreter.stack) == 1:
-        (l, s, pc, invoker) = intepreter.stack.pop()
+    if len(interpreter.stack) == 1:
+        (l, s, pc, invoker) = interpreter.stack.pop()
         if len(s) > 0:
-            intepreter.program_return = s[-1]
+            interpreter.program_return = s[-1]
         else:
-            intepreter.program_return = None
+            interpreter.program_return = None
     else:
         # Add return to calltrace
-        intepreter.call_trace.append((intepreter.stack[-1][INVOKEDBY], intepreter.stack[-2][INVOKEDBY], "return"))
+        interpreter.call_trace.append((interpreter.stack[-1][INVOKEDBY], interpreter.stack[-2][INVOKEDBY], "return"))
 
         # pop stackframe and push function return value to previous stackframes operand stack
-        (l, s, pc, invoker) = intepreter.stack.pop()
+        (l, s, pc, invoker) = interpreter.stack.pop()
         if len(s) > 0:
-            intepreter.stack[-1][OPERANDSTACK].append(s[-1])
+            interpreter.stack[-1][OPERANDSTACK].append(s[-1])
         # Set program to invokee invoker and resume execution
-        intepreter.program = utils.load_method(
-            intepreter.stack[-1][INVOKEDBY][0],
-            intepreter.code_memory[intepreter.stack[-1][INVOKEDBY][1]],
-            intepreter.stack[-1][INVOKEDBY][2]
+        interpreter.program = utils.load_method(
+            interpreter.stack[-1][INVOKEDBY][0],
+            interpreter.code_memory[interpreter.stack[-1][INVOKEDBY][1]],
+            interpreter.stack[-1][INVOKEDBY][2]
         )
     return b
 
@@ -162,6 +162,23 @@ def op_ifz(interpreter, b):
         else:
             # Jump to target if condition is not met
             interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "is":
+        if v_1:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] += 1
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] = b["target"]
+
+    if b["condition"] == "isnot":
+        if v_1:
+            # Increase program counter if condition is met
+            interpreter.stack[-1][PC] = b["target"]
+        else:
+            # Jump to target if condition is not met
+            interpreter.stack[-1][PC] += 1
+
     return b
 
 
@@ -181,7 +198,7 @@ def op_store(interperter, b):
             # to arbitrary indexes
             interperter.stack[-1][LOCAL].append(v_1)
             interperter.stack[-1][LOCAL].append(v_1)
-            interperter.stack[-1][PC] += 1
+        interperter.stack[-1][PC] += 1
         return b
 
     # Handle integers and refs
@@ -225,6 +242,20 @@ def op_dup(interpreter, b):
     interpreter.stack[-1][PC] += 1
     return b
 
+def op_dup_x1(interpreter, b):
+    print(f"op_dup_x1 called on {b}")
+    v = interpreter.stack[-1][OPERANDSTACK][-1]
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-2] + [v] + interpreter.stack[-1][OPERANDSTACK][-2:]
+    interpreter.stack[-1][PC] += 1
+    return b
+
+
+def op_dup_x2(interpreter, b):
+    print(f"op_dup_x2 called on {b}")
+    v = interpreter.stack[-1][OPERANDSTACK][-1]
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-3] + [v] + interpreter.stack[-1][OPERANDSTACK][-3:]
+    interpreter.stack[-1][PC] += 1
+    return b
 
 def op_goto(interpreter, b):
     # Note this only works for gotos within the routine
@@ -336,9 +367,12 @@ def op_invoke(interpreter, b):
         n = 0
 
     n += len(b["method"]["args"])
+    if n != 0:
+        function_params = interpreter.stack[-1][OPERANDSTACK][-n:]
+        interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
+    else:
+        function_params = []
 
-    function_params = interpreter.stack[-1][OPERANDSTACK][-n:]
-    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
     interpreter.stack[-1][PC] += 1
 
     new_stack_frame = [
@@ -386,9 +420,23 @@ def op_invoke(interpreter, b):
     return b
 
 
-def op_pop(self, b):
+def op_pop(interpreter, b):
     print(f"op_pop called on {b}")
     n = b["words"]
-    self.stack[-1][OPERANDSTACK] = self.stack[-1][OPERANDSTACK][:-n]
-    self.stack[-1][PC] += 1
+    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
+    interpreter.stack[-1][PC] += 1
+    return b
+
+
+def op_cast(interpreter, b):
+    print(f"op_cast called on {b}")
+    to_type = b["to"]
+    val = interpreter.stack[-1][OPERANDSTACK].pop()
+    converted_val = val # In case we døn't hændle cånværsion
+    if to_type in ["float", "double"]:
+        converted_val = float(val)
+    if to_type in ["int", "long"]:
+        converted_val = int(val)
+    interpreter.stack[-1][OPERANDSTACK].append(converted_val)
+    interpreter.stack[-1][PC] += 1
     return b
