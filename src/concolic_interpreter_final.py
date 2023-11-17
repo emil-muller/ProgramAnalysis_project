@@ -91,6 +91,7 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
+            print(f"Final path constraint: {z3.simplify(path_constraint)} <-> {path_constraint}")
             self.call_traces.append(self.call_trace)
         self.log_done()
 

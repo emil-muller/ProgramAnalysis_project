@@ -56,7 +56,11 @@ def op_load(interpreter, b):
 
 def op_push(interpreter, b):
     print(f"op_push called on {b}")
-    interpreter.stack[-1].push(ConcolicValue.from_const(b.value["value"]))
+    if b.value:
+        interpreter.stack[-1].push(ConcolicValue.from_const(b.value["value"]))
+    else:
+        interpreter.stack[-1].push(ConcolicValue.from_const(b.value))
+
     interpreter.stack[-1].pc += 1
     return b
 
@@ -175,7 +179,7 @@ def op_arraylength(interpreter, b):
     print(f"op_arraylength called on {b}")
     arr_ref = interpreter.stack[-1].stack.pop().concrete
 
-    arr_len = len(interpreter.memory[arr_ref])
+    arr_len = ConcolicValue.from_const(len(interpreter.memory[arr_ref]))
     interpreter.stack[-1].stack.append(ConcolicValue.from_const(arr_len))
     interpreter.stack[-1].pc += 1
     return b
@@ -320,7 +324,7 @@ def op_put(interpreter, b):
 
 def op_pop(interpreter, b):
     print(f"op_pop called on {b}")
-    n = b["words"]
+    n = b.words
     interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
     interpreter.stack[-1].pc += 1
     return b
