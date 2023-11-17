@@ -198,7 +198,7 @@ def op_store(interperter, b):
             # to arbitrary indexes
             interperter.stack[-1][LOCAL].append(v_1)
             interperter.stack[-1][LOCAL].append(v_1)
-            interperter.stack[-1][PC] += 1
+        interperter.stack[-1][PC] += 1
         return b
 
     # Handle integers and refs
@@ -367,9 +367,12 @@ def op_invoke(interpreter, b):
         n = 0
 
     n += len(b["method"]["args"])
+    if n != 0:
+        function_params = interpreter.stack[-1][OPERANDSTACK][-n:]
+        interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
+    else:
+        function_params = []
 
-    function_params = interpreter.stack[-1][OPERANDSTACK][-n:]
-    interpreter.stack[-1][OPERANDSTACK] = interpreter.stack[-1][OPERANDSTACK][:-n]
     interpreter.stack[-1][PC] += 1
 
     new_stack_frame = [

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from z3 import *
 
-@dataclass(frozen = True)
+@dataclass#(frozen = True)
 class ConcolicValue:
-    concrete: int | bool | str
+    concrete: int | bool | str | float
     symbolic: ExprRef
 
     def __repr__(self):
@@ -17,6 +17,8 @@ class ConcolicValue:
             return ConcolicValue(c, IntVal(c))
         if isinstance(c, str):
             return ConcolicValue(c, StringVal(c))
+        if isinstance(c, float):
+            return ConcolicValue(c, RealVal(c))
 
         raise Exception(f"Unknown const")
 
@@ -24,9 +26,12 @@ class ConcolicValue:
         DICT = {
             "sub": "__sub__",
             "add": "__add__",
+            "mul": "__mul__"
         }
         if operant in DICT:
             opr = DICT[operant]
+            if opr == "__mul__":
+                pass
         else:
             if operant == "div":
                 return ConcolicValue(
@@ -49,6 +54,7 @@ class ConcolicValue:
             "lt": "__lt__",
             "eq": "__eq__",
             "isnot": "__ne__",
+            "is": "__eq__",
         }
         if copr in DICT:
             opr = DICT[copr]

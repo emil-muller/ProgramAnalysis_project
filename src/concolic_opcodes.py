@@ -38,6 +38,9 @@ def op_get(interpreter, b):
     print(f"op_get called on {b}")
     if b.field["name"] == "$assertionsDisabled":
         interpreter.stack[-1].push(ConcolicValue.from_const(False))
+    elif  b.static:
+        interpreter.op_nop(b)
+        return b
     else:
         objref = interpreter.stack[-1].stack.pop().concrete
         val = interpreter.memory[objref][b.field["name"]]
@@ -78,17 +81,50 @@ def op_dup(interpreter, b):
     interpreter.stack[-1].pc += 1
     return b
 
-def op_store(interpreter, b):
-    print(f"op_store called on {b}")
-    interpreter.stack[-1].store(b.index)
+def op_nop(interpreter, b):
+    print(f"!!!!!!!!! NOP CALLED ON {b} !!!!!!!!!!")
     interpreter.stack[-1].pc += 1
     return b
 
+def op_store(interpreter, b):
+    print(f"op_store called on {b}")
+
+    v_1 = interpreter.stack[-1].stack.pop()
+
+    # Handle doubles
+    if b.type == "double":
+        interpreter.stack[-1].local_variables[b.index] = v_1
+        interpreter.stack[-1].local_variables[b.index + 1] = v_1
+        interpreter.stack[-1].pc += 1
+        return b
+
+    # Handle ints and refs
+    interpreter.stack[-1].local_variables[b.index] = v_1
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_dup_x1(interpreter, b):
+    print(f"op_dup_x1 called on {b}")
+    v = interpreter.stack[-1].stack[-1]
+    interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-2] + [v] + interpreter.stack[-1].stack[-2:]
+    interpreter.stack[-1].pc += 1
+    return b
+
+
+def op_dup_x2(interpreter, b):
+    print(f"op_dup_x2 called on {b}")
+    v = interpreter.stack[-1].stack[-1]
+    interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-3] + [v] + interpreter.stack[-1].stack[-3:]
+    interpreter.stack[-1].pc += 1
+    return b
 
 def op_binary(interpreter, b):
     print(f"op_binary called on {b}")
     v2 = interpreter.stack[-1].pop()
     v1 = interpreter.stack[-1].pop()
+    if isinstance(v1.concrete, float) or isinstance(v2.concrete, float):
+        v1.concrete = float(v1.concrete)
+        v2.concrete = float(v2.concrete)
     if b.operant == "div":
         if v2.concrete == 0:
             interpreter.program_return = "Divide by 0"
@@ -116,6 +152,56 @@ def op_incr(interpreter, b):
 def op_goto(interpreter, b):
     print(f"op_goto called on {b}")
     interpreter.stack[-1].pc = b.target
+    return b
+
+def op_array_load(interpreter, b):
+    print(f"op_array_load called on {b}")
+    i = interpreter.stack[-1].stack.pop().concrete
+    if i < 0:
+        raise Exception("Tried to access negative array index")
+
+    arr_ref = interpreter.stack[-1].stack.pop().concrete
+
+    val = interpreter.memory[arr_ref][i]
+    interpreter.stack[-1].stack.append(val)
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_arraylength(interpreter, b):
+    print(f"op_arraylength called on {b}")
+    arr_ref = interpreter.stack[-1].stack.pop().concrete
+
+    arr_len = len(interpreter.memory[arr_ref])
+    interpreter.stack[-1].stack.append(arr_len)
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_newarray(interpreter, b):
+    print(f"op_newarray called on {b}")
+    # Grab size of array
+    size = interpreter.stack[-1].stack.pop().concrete
+
+    # Create object reference and push to stack
+    objref = f'Array_{uuid.uuid4()}'
+    interpreter.stack[-1].stack.append(ConcolicValue.from_const(objref))
+
+    # Technically not necessary to initialize array in python
+    # , but it makes the code more clear
+    interpreter.memory[objref] = [0 for _ in range(size)]
+
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_array_store(interpreter, b):
+    print(f"op_array_store called on {b}")
+    # Note, doesn't handle doubles or longs
+    val = interpreter.stack[-1].stack.pop()
+    index = interpreter.stack[-1].stack.pop().concrete
+    arr_ref = interpreter.stack[-1].stack.pop().concrete
+
+    interpreter.memory[arr_ref][index] = val
+
+    interpreter.stack[-1].pc += 1
     return b
 
 def op_return(interpreter, b):
@@ -155,9 +241,14 @@ def op_invoke(interpreter, b):
         n = 0
 
     n += len(b.method["args"])
+    function_params = {}
+    if n != 0:
+        for i, element in enumerate(interpreter.stack[-1].stack[-n:]):
+            function_params[i] = element
+        interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
+    else:
+        function_params = {}
 
-    function_params = interpreter.stack[-1].stack[-n:]
-    interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
     interpreter.stack[-1].pc += 1
 
     new_stack_frame = State(
@@ -217,5 +308,26 @@ def op_put(interpreter, b):
     name = b.field["name"]
 
     interpreter.memory[objref][name] = val
+    interpreter.stack[-1].pc += 1
+    return b
+
+def op_pop(interpreter, b):
+    print(f"op_pop called on {b}")
+    n = b["words"]
+    interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
+    interpreter.stack[-1].pc += 1
+    return b
+
+
+def op_cast(interpreter, b):
+    print(f"op_cast called on {b}")
+    to_type = b.to
+    val = interpreter.stack[-1].stack.pop()
+    converted_val = val # In case we døn't hændle cånværsion
+    if to_type in ["float", "double"]:
+        converted_val = ConcolicValue.from_const(float(val.concrete))
+    if to_type in ["int", "long"]:
+        converted_val = ConcolicValue.from_const(int(val.concrete))
+    interpreter.stack[-1].stack.append(converted_val)
     interpreter.stack[-1].pc += 1
     return b
