@@ -106,7 +106,7 @@ def validate_match(match_lst):
     if "->" not in match_lst[0]:
         return False
 
-    #if "<--" not in match_lst[-1] and "end" not in match_lst[-1]:
+    #if "<--" not in match_lst[-1]:
     #    return False
 
     in_calls = 0
@@ -394,9 +394,9 @@ def final_sequence_diagram(call_traces, call_trace_params, interpreter):
         plant.append(to_plantuml(call_traces[i], call_trace_params[i], interpreter, plant_param)[1:-1])
         plant_params.append(plant_param)
     print(plant_params)
-    for i in range(0, len(plant)):
-        print("\n".join(append_method_variables(plant[i], plant_params[i])))
-        print()
+    #for i in range(0, len(plant)):
+    #    print("\n".join(append_method_variables(plant[i], plant_params[i])))
+    #    print()
     #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
     combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
     return '\n'.join(compress_plantuml(combined_plant))

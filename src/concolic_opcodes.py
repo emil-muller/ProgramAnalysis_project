@@ -67,7 +67,7 @@ def op_new(interpreter, b):
         return None  # Will terminate current execution
 
     if b.dictionary["class"] == "java/lang/Exception":
-        interpreter.program_return = "Exception thrown"
+        interpreter.program_return = f"Exception thrown"
         return None  # Will terminate current execution
 
     class_name = f'{b.dictionary["class"]}_{uuid.uuid4()}'
@@ -160,13 +160,22 @@ def op_goto(interpreter, b):
 
 def op_array_load(interpreter, b):
     print(f"op_array_load called on {b}")
-    i = interpreter.stack[-1].stack.pop().concrete
-    if i < 0:
-        raise Exception("Tried to access negative array index")
+    i = interpreter.stack[-1].stack.pop()
+    arr_ref = interpreter.stack[-1].stack.pop()
+    arr_size = interpreter.memory[f"{arr_ref.concrete}_length"]
+    if i.concrete < 0:
+        interpreter.path += [i.symbolic < 0]
+        interpreter.program_return = "Negative index access"
+        return None
+        #raise Exception("Tried to access negative array index")
+    elif i.concrete >= arr_size.concrete:
+        interpreter.path += [i.symbolic >= arr_size.symbolic]
+        interpreter.program_return = "Out of bounds array load"
+        return None
+    else:
+        interpreter.path += [And(i.symbolic < arr_size.symbolic, i.symbolic >= 0)]
 
-    arr_ref = interpreter.stack[-1].stack.pop().concrete
-
-    val = interpreter.memory[arr_ref][i]
+    val = interpreter.memory[arr_ref.concrete][i.concrete]
     interpreter.stack[-1].stack.append(val)
     interpreter.stack[-1].pc += 1
     return b
@@ -201,13 +210,21 @@ def op_array_store(interpreter, b):
     print(f"op_array_store called on {b}")
     # Note, doesn't handle doubles or longs
     val = interpreter.stack[-1].stack.pop()
-    index = interpreter.stack[-1].stack.pop().concrete
-    arr_ref = interpreter.stack[-1].stack.pop().concrete
+    index = interpreter.stack[-1].stack.pop()
+    arr_ref = interpreter.stack[-1].stack.pop()
+    arr_size = interpreter.memory[f"{arr_ref.concrete}_length"]
+    if index.concrete < 0:
+        interpreter.path += [index.symbolic < 0]
+        interpreter.program_return = "Negative index store"
+        return None
+    elif arr_size.concrete <= index.concrete:
+        interpreter.path += [index.symbolic >= arr_size.symbolic]
+        interpreter.program_return = "Out of bounds array store"
+        return None
+    else:
+        interpreter.path += [And(index.symbolic < arr_size.symbolic, index.symbolic >= 0)]
 
-    if len(interpreter.memory[arr_ref]) <= index:
-        interpreter.program_return = "Index out of bounds"
-        return None #will terminate current run
-    interpreter.memory[arr_ref][index] = val
+    interpreter.memory[arr_ref.concrete][index.concrete] = val
 
     interpreter.stack[-1].pc += 1
     return b

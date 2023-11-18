@@ -15,6 +15,7 @@ class ConcolicInterpreter:
         self.program_return = None
 
         # This list contains the information needed for the sequence diagram
+        self.prog_returns = []
         self.call_trace = []
         self.param_dict_for_call_trace = {}
         self.call_traces = []
@@ -94,8 +95,7 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
-            print(self.call_trace)
-            print(self.param_dict_for_call_trace)
+            self.prog_returns.append(f"{input=} -> {self.program_return}\n{z3.simplify(path_constraint)}")
             self.call_traces.append(self.call_trace)
             self.param_dict_for_call_traces.append(self.param_dict_for_call_trace)
         self.log_done()
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     program_path = "../TestPrograms/ConcolicTests/out/production/ConcolicTests/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "CalculateSummaryError"
+    entry_function_name = "BuildSchedule"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 
@@ -201,6 +201,10 @@ if __name__ == "__main__":
     test.load_program_into_memory(program)
     test.run(entry_function, 100000, entry_class_name, entry_function_name)
 
+    print("\n\n".join(test.prog_returns))
+    print()
     print(utils.final_sequence_diagram(test.call_traces, test.param_dict_for_call_traces,  test))
+    print()
+    print("\n\n".join(test.prog_returns))
 
 

@@ -27,6 +27,13 @@ public class UniversityServer {
         return studentManager.GetCourses(student);
     }
 
+    public Schedule BuildSchedule(int studId) throws Exception {
+        Student student = studentManager.GetStudent(studId);
+        Course[] courses = studentManager.GetCourses(student);
+
+        return ScheduleBuilder.BuildSchedule(courses);
+    }
+
     public EctsSummary CalculateEctsSummary(int studId) throws Exception {
         Student student = studentManager.GetStudent(studId);
         Course[] courses = studentManager.GetCourses(student);

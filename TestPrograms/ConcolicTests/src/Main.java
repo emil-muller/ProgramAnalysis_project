@@ -1,6 +1,6 @@
 public class Main {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello world!");
+
         RegisterStudent(5);
         RegisterCourse(5);
         try{
@@ -99,12 +99,24 @@ public class Main {
         UniversityServer server = new UniversityServer();
         server.RegisterNewStudent(id);
 
-        for(int i = 0; i < courseCount; i ++){
-            server.RegisterNewCourse(i, 7, 1, 1);
-            server.EnrollStudent(id, i);
+        // either 0 or 1
+        assert courseCount < 2;
+        assert courseCount > -1;
+
+        if(courseCount >= 1){
+            server.RegisterNewCourse(1, 7, 1, 1);
+            server.EnrollStudent(id, 1);
         }
 
         server.CalculateEctsSummary(id);
+    }
+
+    public static void BuildSchedule(int ects, int day) throws Exception {
+        UniversityServer server = new UniversityServer();
+        server.RegisterNewStudent(1);
+        server.RegisterNewCourse(1, ects, 1, day);
+        server.EnrollStudent(1, 1);
+        server.BuildSchedule(1);
     }
 
     /**
@@ -124,6 +136,15 @@ public class Main {
          }
 
          return 42;
+    }
+
+    public static void arrayTest(int i, int len){
+        int[] arr = new int[len];
+        int x = arr[i];
+    }
+    public static void arrayTest2(int i, int len){
+        int[] arr = new int[len];
+        arr[i] = 5;
     }
 
     public static int TestString(String s){
