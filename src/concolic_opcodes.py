@@ -175,15 +175,16 @@ def op_arraylength(interpreter, b):
     print(f"op_arraylength called on {b}")
     arr_ref = interpreter.stack[-1].stack.pop().concrete
 
-    arr_len = len(interpreter.memory[arr_ref])
-    interpreter.stack[-1].stack.append(ConcolicValue.from_const(arr_len))
+    #arr_len = len(interpreter.memory[arr_ref])
+    #interpreter.stack[-1].stack.append(ConcolicValue.from_const(arr_len))
+    interpreter.stack[-1].stack.append(interpreter.memory[f"{arr_ref}_length"])
     interpreter.stack[-1].pc += 1
     return b
 
 def op_newarray(interpreter, b):
     print(f"op_newarray called on {b}")
     # Grab size of array
-    size = interpreter.stack[-1].stack.pop().concrete
+    size = interpreter.stack[-1].stack.pop()
 
     # Create object reference and push to stack
     objref = f'Array_{uuid.uuid4()}'
@@ -191,8 +192,8 @@ def op_newarray(interpreter, b):
 
     # Technically not necessary to initialize array in python
     # , but it makes the code more clear
-    interpreter.memory[objref] = [0 for _ in range(size)]
-
+    interpreter.memory[objref] = [0 for _ in range(size.concrete)]
+    interpreter.memory[f"{objref}_length"] = size
     interpreter.stack[-1].pc += 1
     return b
 
@@ -228,7 +229,7 @@ def op_return(interpreter, b):
         interpreter.stack.pop()
         if len(s) > 0:
             interpreter.stack[-1].stack.append(s[-1])
-            interpreter.param_dict_for_call_trace[len(interpreter.call_trace) - 1] = s[-1]
+            interpreter.param_dict_for_call_trace[len(interpreter.call_trace) - 1] = {1: s[-1]}
         # Set program to invokee invoker and resume execution
         interpreter.current_method = utils.load_method(
             interpreter.stack[-1].invokerenos[0],
@@ -320,7 +321,7 @@ def op_put(interpreter, b):
 
 def op_pop(interpreter, b):
     print(f"op_pop called on {b}")
-    n = b["words"]
+    n = b.words #b["words"]
     interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
     interpreter.stack[-1].pc += 1
     return b

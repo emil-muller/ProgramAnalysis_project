@@ -193,7 +193,7 @@ if __name__ == "__main__":
     program_path = "../TestPrograms/ConcolicTests/out/production/ConcolicTests/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "RegisterCourse"
+    entry_function_name = "CalculateSummaryError"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 

@@ -89,12 +89,12 @@ def to_plantuml(call_trace, params, interpreter, out_params):
         if type == "invoke":
             if invokee[0] != "<init>" or interpreter.verbose:
                 if i in params:
-                    out_params[i] = params[i]
+                    out_params[len(uml_lst)] = params[i]
                 uml_lst.append(f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}')
         elif type == "return":
             if invoker[0] != "<init>" or interpreter.verbose:
                 if i in params:
-                    out_params[i] = params[i]
+                    out_params[len(uml_lst)] = params[i]
                 uml_lst.append(f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}')
         i += 1
     uml_lst.append("@enduml")
@@ -106,8 +106,8 @@ def validate_match(match_lst):
     if "->" not in match_lst[0]:
         return False
 
-    if "<--" not in match_lst[-1]:
-        return False
+    #if "<--" not in match_lst[-1] and "end" not in match_lst[-1]:
+    #    return False
 
     in_calls = 0
     out_calls = 0
@@ -376,6 +376,16 @@ def combine_diagrams(umls):
                     difs[i].append(umls[i][indicies[i].index])
         increment_indicies(indicies)
 
+def append_method_variables(uml, call_params):
+    uml_new = []
+    for i in range(0, len(uml)):
+        if i in call_params:
+            parsed_params = [call_params[i][k].concrete if not isinstance(call_params[i][k].concrete, str) or "_" not in call_params[i][k].concrete else "ref" for k in call_params[i]]
+            uml_new.append(uml[i] + f"({parsed_params})")
+        else:
+            uml_new.append(uml[i])
+    return uml_new
+
 def final_sequence_diagram(call_traces, call_trace_params, interpreter):
     plant = []
     plant_params = []
@@ -384,6 +394,9 @@ def final_sequence_diagram(call_traces, call_trace_params, interpreter):
         plant.append(to_plantuml(call_traces[i], call_trace_params[i], interpreter, plant_param)[1:-1])
         plant_params.append(plant_param)
     print(plant_params)
+    for i in range(0, len(plant)):
+        print("\n".join(append_method_variables(plant[i], plant_params[i])))
+        print()
     #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
     combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
     return '\n'.join(compress_plantuml(combined_plant))
