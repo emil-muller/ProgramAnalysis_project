@@ -269,7 +269,7 @@ def combine_if_identical(groups, options): #groups and options must be same leng
         new_options.append(options[i])
     return new_groups
 
-def combine_diagrams(umls):
+def combine_diagrams(umls, prog_returns):
     uml_lst = []
     append_to_end = []
     #initialize index list
@@ -282,6 +282,7 @@ def combine_diagrams(umls):
         indicies_to_be_deleted = []
         for i in range(0, len(umls)): # remove indicies that are done
             if indicies[i].index >= len(umls[i]):
+                uml_lst.append(f"note right of: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                 indicies_to_be_deleted.append((indicies[i], umls[i]))
                 deleted_options = True
 
@@ -339,13 +340,10 @@ def combine_diagrams(umls):
                         deleted_options = True
                         group.append(f"group Option {indicies[i].option}")
                         group += difs[i]
+                        group.append(f"note right of: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                         group.append("end")
                         groups.append(group)
                         indexoptions.append(indicies[i].option)
-                        #uml_lst.append(f"group Option {indicies[i].option}")
-                        #uml_lst += difs[i]
-                        #uml_lst.append("end")
-                        #TODO: collapse deleted, they might be the same
                         indicies_to_be_deleted.append((indicies[i], umls[i]))
                 groups = combine_if_identical(groups, indexoptions)
                 for group in groups:
@@ -398,7 +396,7 @@ def final_sequence_diagram(call_traces, call_trace_params, interpreter):
     #    print("\n".join(append_method_variables(plant[i], plant_params[i])))
     #    print()
     #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
-    combined_plant = ["@startuml"] + combine_diagrams(plant) + ["@enduml"]
+    combined_plant = ["@startuml"] + combine_diagrams(plant, interpreter.prog_returns) + ["@enduml"]
     return '\n'.join(compress_plantuml(combined_plant))
 
 if __name__ == "__main__":

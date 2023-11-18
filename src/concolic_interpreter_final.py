@@ -95,7 +95,7 @@ class ConcolicInterpreter:
             print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
-            self.prog_returns.append(f"{input=} -> {self.program_return}\n{z3.simplify(path_constraint)}")
+            self.prog_returns.append(f"{input=} -> {self.program_return}")
             self.call_traces.append(self.call_trace)
             self.param_dict_for_call_traces.append(self.param_dict_for_call_trace)
         self.log_done()
