@@ -269,6 +269,39 @@ def combine_if_identical(groups, options): #groups and options must be same leng
         new_options.append(options[i])
     return new_groups
 
+def combine_if_identical2(groups, options): #groups and options must be same length and they will be, trust me
+    new_groups = []
+    new_options = []
+    for i in range(0, len(groups)):
+        for k in range(0, len(groups)):
+            if not groups[i][0] == groups[k][0] and len(groups[i]) == len(groups[k]):
+                flag = True
+                note = ""
+                for j in range(1, len(groups[i])):
+                    if groups[i][j] != groups[k][j] and "note" not in groups[k][j] and "note" not in groups[i][j]:
+                        flag = False
+                    elif "note" in groups[k][j] and "note" in groups[i][j]:
+                        note = groups[k][j]
+                if flag:
+                    if len(groups[i][1:-1]) > 0:
+                        new_groups.append([f"group Options {options[i]}, {options[k]}"])
+                        new_groups[i] += groups[i][1:-1]
+                        new_groups[i].append(note)
+                        new_groups[i].append("end")
+                        new_options.append(f"{options[i]}, {options[k]}")
+                    del(groups[k]) # remove the group k now merged with i, here i < k always
+                    del(options[k])
+                    for j in range(i + 1, len(groups)): # we have combined add remaining groups and call recursively
+                        if len(groups[j][1:-1]) > 0:
+                            new_options.append(options[j])
+                            new_groups.append(groups[j])
+                    return combine_if_identical2(new_groups, new_options)
+
+        #no merge was found for groups[i]
+        new_groups.append(groups[i])
+        new_options.append(options[i])
+    return new_groups
+
 def combine_diagrams(umls, prog_returns):
     uml_lst = []
     append_to_end = []
@@ -282,7 +315,7 @@ def combine_diagrams(umls, prog_returns):
         indicies_to_be_deleted = []
         for i in range(0, len(umls)): # remove indicies that are done
             if indicies[i].index >= len(umls[i]):
-                uml_lst.append(f"note right of: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
+                uml_lst.append(f"note right Main: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                 indicies_to_be_deleted.append((indicies[i], umls[i]))
                 deleted_options = True
 
@@ -313,12 +346,12 @@ def combine_diagrams(umls, prog_returns):
                     if all_contains(difs[i][-1], difs): # found the common one
                         groups = []
                         for k in range(0, len(difs)):
-                            diff_index = difs[k].index(difs[k][-1]) # get index for common item
+                            diff_index = difs[k].index(difs[i][-1]) # get index for common item
                             groups.append([f"group Option {indicies[k].option}"])
                             groups[k] += difs[k][0 : diff_index]
                             groups[k].append("end")
                             indicies[k].index = split_indicies[k].index + diff_index - 1 # Continue after shared item
-                        groups = combine_if_identical(groups, [f"{index.option}" for index in indicies])
+                        groups = combine_if_identical2(groups, [f"{index.option}" for index in indicies])
                         for group in groups:
                             uml_lst += group
                         break
@@ -340,12 +373,12 @@ def combine_diagrams(umls, prog_returns):
                         deleted_options = True
                         group.append(f"group Option {indicies[i].option}")
                         group += difs[i]
-                        group.append(f"note right of: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
+                        group.append(f"note right Main: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                         group.append("end")
                         groups.append(group)
                         indexoptions.append(indicies[i].option)
                         indicies_to_be_deleted.append((indicies[i], umls[i]))
-                groups = combine_if_identical(groups, indexoptions)
+                groups = combine_if_identical2(groups, indexoptions)
                 for group in groups:
                     uml_lst += group
                 if deleted_options:  # create new group with remaining indicies

@@ -190,10 +190,10 @@ class ConcolicInterpreter:
 
 if __name__ == "__main__":
     entry_class_name = "Main"
-    program_path = "../TestPrograms/ConcolicTests/out/production/ConcolicTests/"
+    program_path = "../TestPrograms/ConcolicTestsExplicit/out/production/ConcolicTestsExplicit/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "BuildSchedule"
+    entry_function_name = "CalculateSummaryError"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 
