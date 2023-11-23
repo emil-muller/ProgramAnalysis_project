@@ -19,6 +19,9 @@ class ConcolicValue:
             return ConcolicValue(c, StringVal(c))
         if isinstance(c, float):
             return ConcolicValue(c, RealVal(c))
+        # Handle null values
+        if not c:
+            return ConcolicValue(c, BoolVal(False))
 
         raise Exception(f"Unknown const")
 
