@@ -315,7 +315,12 @@ def combine_if_identical2(groups, options): #groups and options must be same len
     return new_groups
 
 def combine_diagrams(umls, prog_returns):
-    attach_note_to = umls[0][0].split(" ->")[0]
+    first = 0
+    while len(umls[first]) == 0:
+        first+=1
+        if first>=len(umls):
+            return []
+    attach_note_to = umls[first][0].split(" ->")[0]
     uml_lst = []
     append_to_end = []
     #initialize index list

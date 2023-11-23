@@ -148,11 +148,11 @@ class Interpreter:
 if __name__ == "__main__":
     entry_class = utils.load_class(
         "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
-    entry_function = utils.load_method("methodInIf", entry_class, [])
+    entry_function = utils.load_method("loopTest", entry_class, [])
     program = utils.load_program(
         "../TestPrograms/CoreTests/out/production/CoreTests/")
     state = [[4], [], 0, (
-        "methodInIf", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "loopTest", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
     test.run(state)
