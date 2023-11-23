@@ -82,7 +82,7 @@ def lookup_virtual_and_static_method(interpreter, b):
     return method
 
 
-def to_plantuml(call_trace, params, interpreter, out_params):
+def to_plantuml_concolic(call_trace, params, interpreter, out_params):
     uml_lst = ["@startuml"]
     i = 0;
     for invoker, invokee, type in call_trace:
@@ -101,6 +101,18 @@ def to_plantuml(call_trace, params, interpreter, out_params):
 
     return uml_lst
 
+def to_plantuml(call_trace, interpreter):
+    uml_lst = ["@startuml"]
+    for invoker, invokee, type in call_trace:
+        if type == "invoke":
+            if invokee[0] != "<init>" or interpreter.verbose:
+                uml_lst.append(f'"{invoker[1]}" -> "{invokee[1]}" : {invokee[0]}')
+        elif type == "return":
+            if invoker[0] != "<init>" or interpreter.verbose:
+                uml_lst.append(f'"{invokee[1]}" <-- "{invoker[1]}" : {invoker[0]}')
+    uml_lst.append("@enduml")
+
+    return uml_lst
 
 def validate_match(match_lst):
     if "->" not in match_lst[0]:
@@ -417,20 +429,24 @@ def append_method_variables(uml, call_params):
             uml_new.append(uml[i])
     return uml_new
 
-def final_sequence_diagram(call_traces, call_trace_params, interpreter):
+def final_sequence_diagram_concolic(call_traces, call_trace_params, interpreter):
     plant = []
     plant_params = []
     for i in range(0, len(call_traces)):
         plant_param = {}
-        plant.append(to_plantuml(call_traces[i], call_trace_params[i], interpreter, plant_param)[1:-1])
-        plant_params.append(plant_param)
-    print(plant_params)
+        plant.append(to_plantuml_concolic(call_traces[i], call_trace_params[i], interpreter, plant_param)[1:-1])
+        # plant_params.append(plant_param)
+    # print(plant_params)
     #for i in range(0, len(plant)):
     #    print("\n".join(append_method_variables(plant[i], plant_params[i])))
     #    print()
     #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
     combined_plant = ["@startuml"] + combine_diagrams(plant, interpreter.prog_returns) + ["@enduml"]
     return '\n'.join(compress_plantuml(combined_plant))
+
+def final_sequence_diagram(call_trace, interpreter, prog_returns):
+    plant = ["@startuml"] + to_plantuml(call_trace, interpreter)[1:-1] + ["@enduml"]
+    return '\n'.join(compress_plantuml(plant))
 
 if __name__ == "__main__":
     uml = combine_diagrams([uml1, uml2, uml3, uml4])

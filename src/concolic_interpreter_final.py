@@ -189,11 +189,11 @@ class ConcolicInterpreter:
 
 
 if __name__ == "__main__":
-    entry_class_name = "Main"
-    program_path = "../TestPrograms/ConcolicTestsExplicit/out/production/ConcolicTestsExplicit/"
+    entry_class_name = "classA"
+    program_path = "../TestPrograms/CoreTests/out/production/CoreTests/"
     entry_class = utils.load_class(
         f"{program_path}{entry_class_name}.json")
-    entry_function_name = "CalculateSummaryError"
+    entry_function_name = "methodInIf"
     entry_function = utils.load_method(entry_function_name, entry_class, [])
     program = utils.load_program(program_path)
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     print("\n\n".join(test.prog_returns))
     print()
-    print(utils.final_sequence_diagram(test.call_traces, test.param_dict_for_call_traces,  test))
+    print(utils.final_sequence_diagram_concolic(test.call_traces, test.param_dict_for_call_traces,  test))
     print()
     print("\n\n".join(test.prog_returns))
 

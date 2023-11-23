@@ -147,20 +147,19 @@ class Interpreter:
 
 if __name__ == "__main__":
     entry_class = utils.load_class(
-        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/Main.json")
-    entry_function = utils.load_method("testComplexDiscountLogicI", entry_class, [])
+        "../TestPrograms/CoreTests/out/production/CoreTests/classA.json")
+    entry_function = utils.load_method("methodInIf", entry_class, [])
     program = utils.load_program(
-        "../TestPrograms/CRMSystemForInterpreter/out/production/CRMSystemForInterpreter/")
-    state = [[1], [], 0, (
-        "testComplexDiscountLogicI", "Main", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
+        "../TestPrograms/CoreTests/out/production/CoreTests/")
+    state = [[4], [], 0, (
+        "methodInIf", "classA", [])]  # local variables  # stackframes  # program counter # (invoker_func,invoker_class)
     test = Interpreter(entry_function, False)
     test.load_program_into_memory(program)
     test.run(state)
-    call_traces = []
-    call_traces.append(test.call_trace)
-    test.call_trace = []
-    state = [[12], [], 0, (
-        "testComplexDiscountLogicI", "Main", [])]
-    test.run(state)
-    call_traces.append(test.call_trace)
-    print(utils.final_sequence_diagram(call_traces, test))
+
+    # test.call_trace = []
+    # state = [[12], [], 0, (
+    #     "testComplexDiscountLogicI", "Main", [])]
+    # test.run(state)
+    # call_traces.append(test.call_trace)
+    print(utils.final_sequence_diagram(test.call_trace, test, [test.program_return]))

@@ -158,6 +158,11 @@ public class classA {
         }
     }
 
+    public static void differingCalls(){
+        classB.callC();
+        classC.doNothing();
+    }
+
     public static void redundantBranching(int x){
         if(x<10){
             classB.redundantBranching(x);
@@ -172,5 +177,17 @@ public class classA {
         }else{
             classB.doNothing();
         }
+    }
+
+    public static void testtest(){
+        classB.testtest();
+        classB.testtest();
+        classB.testtest2();
+    }
+
+    public static void dumbtest(){
+        classB b1 = new classB();
+        b1.getBI().getBI().getBI().getBI().getBI().getCI();
+        classB.getC().getCI().getCI().getBI().getCI().getN();
     }
 }
