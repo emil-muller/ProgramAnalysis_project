@@ -3,7 +3,7 @@ import uuid
 import pytest
 import utils
 from bytecode_interpreter import Interpreter
-from concolic_interpreter_final import ConcolicInterpreter
+from concolic_interpreter import ConcolicInterpreter
 
 
 def test_zero():
