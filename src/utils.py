@@ -303,6 +303,7 @@ def combine_if_identical2(groups, options): #groups and options must be same len
     return new_groups
 
 def combine_diagrams(umls, prog_returns):
+    attach_note_to = umls[0][0].split(" ->")[0]
     uml_lst = []
     append_to_end = []
     #initialize index list
@@ -315,7 +316,7 @@ def combine_diagrams(umls, prog_returns):
         indicies_to_be_deleted = []
         for i in range(0, len(umls)): # remove indicies that are done
             if indicies[i].index >= len(umls[i]):
-                uml_lst.append(f"note right Main: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
+                uml_lst.append(f"note right {attach_note_to}: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                 indicies_to_be_deleted.append((indicies[i], umls[i]))
                 deleted_options = True
 
@@ -373,7 +374,7 @@ def combine_diagrams(umls, prog_returns):
                         deleted_options = True
                         group.append(f"group Option {indicies[i].option}")
                         group += difs[i]
-                        group.append(f"note right Main: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
+                        group.append(f"note right {attach_note_to}: Option({indicies[i].option}) {prog_returns[indicies[i].option]}")
                         group.append("end")
                         groups.append(group)
                         indexoptions.append(indicies[i].option)
