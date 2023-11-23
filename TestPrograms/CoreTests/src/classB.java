@@ -62,4 +62,24 @@ public class classB {
             classB.doNothing();
         }
     }
+
+    public static void testtest(){
+        classC.testtest();
+    }
+
+    public static void testtest2(){
+
+    }
+
+    public static classC getC(){
+        return new classC();
+    }
+
+    public classB getBI(){
+        return new classB();
+    }
+
+    public classC getCI(){
+        return new classC();
+    }
 }
