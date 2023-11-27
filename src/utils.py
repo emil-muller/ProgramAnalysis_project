@@ -7,6 +7,9 @@ def load_class(path):
         json_txt = f.read()
     return json.loads(json_txt)
 
+def debug_print(debug: bool, print_str: str):
+    if debug:
+        print(print_str)
 
 def load_method(name, class_json, params=None):
     for method in class_json["methods"]:
