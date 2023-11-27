@@ -1,6 +1,6 @@
 from z3 import *
 from concolic_types import Method, Bytecode
-import datetime
+from datetime import datetime
 import concolic_opcodes as co
 import utils
 
@@ -29,15 +29,15 @@ class ConcolicInterpreter:
     def log_state(self):
         if self.verbose:
             try:
-                (l, s, pc, invoker) = self.stack[-1]
-                b = self.program["bytecode"][pc]
+                (l, s, pc, invoker) = self.stack[-1].unpack()
+                b = Bytecode(self.current_method["code"]["bytecode"][pc])
                 with open("log/log.txt", "a") as f:
                     f.write("----\n")
                     f.write(
                         f"stack: \n\t" +
-                        f"locals: {self.stack[-1][LOCAL]}\n\t" +
-                        f"operandstack: {self.stack[-1][OPERANDSTACK]}\n\t" +
-                        f"rip: {self.stack[-1][PC]}\n"
+                        f"locals: {self.stack[-1].local_variables}\n\t" +
+                        f"operandstack: {self.stack[-1].stack}\n\t" +
+                        f"rip: {self.stack[-1].pc}\n"
                     )
                     f.write(f"bytecode: \n{b}\n")
                     f.write(f"stackframes:\n {self.stack}\n")
@@ -84,6 +84,7 @@ class ConcolicInterpreter:
 
             # Execute bytecode
             k = 0
+            utils.debug_print(self.verbose, "Debug trace: ")
             while self.step() and k < step_limit:
                 self.log_state()
                 k += 1
@@ -201,6 +202,7 @@ if __name__ == "__main__":
     print("\n".join(test.prog_returns))
     print()
     print("Final PlantUML code:")
+    print()
     print(utils.final_sequence_diagram_concolic(test.call_traces, test.param_dict_for_call_traces,  test))
 
 
