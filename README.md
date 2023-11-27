@@ -34,12 +34,12 @@ All of these files needs to be stored in a single directory. We've provided a sc
 ## Setting up and running the interpreter
 The provided CLI tool has the following parameters:
 
-| Short | Long      | Description                                       |
-|-------|-----------|---------------------------------------------------|
-| -e    | --entry   | The name of the entry function                    |
-| -c    | --class   | The name of the class of the entry function       |
+| Short | Long | Description                                       |
+|-------|----|---------------------------------------------------|
+| -e    | --entry | The name of the entry function                    |
+| -c    | --class | The name of the class of the entry function       |
 | -p    | --program | The full path to the decompiled java byte code    |
-| -k    | --limit   | The maximum amount of opcodes processed every run |
+| -k    |    | The maximum amount of opcodes processed every run |
 
 Running the tool may look like this:
 ```bash

@@ -54,7 +54,7 @@ class ConcolicInterpreter:
             class_name = p["name"]
             self.code_memory[class_name] = p
 
-    def run(self, target: dict, step_limit: int, class_name: str, function_name: str):  # Tuple[Locals, OperStack, ProgramCounter, Invoker]):
+    def run(self, target: dict, step_limit: int, class_name: str, function_name: str):
         initial_method = self.current_method
         self.log_start()
         self.log_state()
@@ -62,7 +62,6 @@ class ConcolicInterpreter:
 
         # Handle param types here
         params = [Int(f"p{i}") for i, _ in enumerate(target["params"])]
-        # params = [String(f"p{i}") for i, _ in enumerate(target["params"])]
 
         while solver.check() == sat:
             model = solver.model()
@@ -91,7 +90,6 @@ class ConcolicInterpreter:
 
             path_constraint = And(*self.path)
             print(f"{input=} -> {self.program_return}\nPath Constraint: {z3.simplify(path_constraint)}")
-            print()
             print()
             solver.add(Not(z3.simplify(path_constraint)))
             self.prog_returns.append(f"{input=} -> {self.program_return}")

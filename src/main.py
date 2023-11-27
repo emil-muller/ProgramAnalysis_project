@@ -6,7 +6,7 @@ argParser = argparse.ArgumentParser()
 argParser.add_argument("-e", "--entry", help="The name of the entry function", required=True)
 argParser.add_argument("-c", "--classname", help="The name of the class of the entry function", required=True)
 argParser.add_argument("-p", "--program", help="The full path to the decompiled java byte code", required=True)
-argParser.add_argument("-k", "--limit", help="The maximum amount of opcodes processed every run", required=True)
+argParser.add_argument("-k", help="The maximum amount of opcodes processed every run", required=True)
 args = argParser.parse_args()
 
 if __name__ == "__main__":

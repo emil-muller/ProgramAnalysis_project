@@ -167,7 +167,6 @@ def op_array_load(interpreter, b):
         interpreter.path += [i.symbolic < 0]
         interpreter.program_return = "Negative index access"
         return None
-        #raise Exception("Tried to access negative array index")
     elif i.concrete >= arr_size.concrete:
         interpreter.path += [i.symbolic >= arr_size.symbolic]
         interpreter.program_return = "Out of bounds array load"
