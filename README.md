@@ -34,12 +34,13 @@ All of these files needs to be stored in a single directory. We've provided a sc
 ## Setting up and running the interpreter
 The provided CLI tool has the following parameters:
 
-| Short | Long | Description                                       |
-|-------|----|---------------------------------------------------|
-| -e    | --entry | The name of the entry function                    |
-| -c    | --class | The name of the class of the entry function       |
-| -p    | --program | The full path to the decompiled java byte code    |
-| -k    |    | The maximum amount of opcodes processed every run |
+| Short | Long      | Description                                         |
+|-------|-----------|-----------------------------------------------------|
+| -e    | --entry   | The name of the entry function                      |
+| -c    | --class   | The name of the class of the entry function         |
+| -p    | --program | The full path to the decompiled java byte code      |
+| -k    | --limit   | The maximum amount of opcodes processed every run   |
+| -d    | --debug   | Set the interpreter into debug mode (default False) |
 
 Running the tool may look like this:
 ```bash
@@ -87,3 +88,4 @@ print("Final PlantUML code:")
 print()
 print(utils.final_sequence_diagram_concolic(test.call_traces, test.param_dict_for_call_traces,  test))
 ```
+
