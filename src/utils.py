@@ -121,9 +121,6 @@ def validate_match(match_lst):
     if "->" not in match_lst[0]:
         return False
 
-    #if "<--" not in match_lst[-1]:
-    #    return False
-
     in_calls = 0
     out_calls = 0
     for call in match_lst:
@@ -168,70 +165,6 @@ def compress_plantuml(uml_lst):
                     break
     return uml_lst
 
-
-
-# Welcome to the uml combining show, proceed at your own paryl
-
-uml1 = [
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classC" : Do1',
-'"classA" <-- "classC" : Do1',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing']
-
-uml2 = [
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classD" : Do2',
-'"classA" <-- "classD" : Do2',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classX" -> "classY" : doNothing',
-'"classX" <-- "classY" : doNothing']
-
-uml3 = [
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classD" : Do2',
-'"classA" <-- "classD" : Do2',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classT" -> "classQ" : doNothing',
-'"classT" <-- "classQ" : doNothing',]
-
-uml4 = [
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classD" : Do2',
-'"classA" <-- "classD" : Do2',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classA" -> "classB" : doNothing',
-'"classA" <-- "classB" : doNothing',
-
-'"classE" -> "classR" : doNothing',
-'"classE" <-- "classR" : doNothing',]
 
 class IndexOption:
     def __init__(self, option):
@@ -456,7 +389,3 @@ def final_sequence_diagram_concolic(call_traces, call_trace_params, interpreter)
 def final_sequence_diagram(call_trace, interpreter, prog_returns):
     plant = ["@startuml"] + to_plantuml(call_trace, interpreter)[1:-1] + ["@enduml"]
     return '\n'.join(compress_plantuml(plant))
-
-if __name__ == "__main__":
-    uml = combine_diagrams([uml1, uml2, uml3, uml4])
-    print('\n'.join(uml))
