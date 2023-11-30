@@ -6,7 +6,7 @@ import uuid
 from concolic_types import ConcolicValue, State
 
 def op_ifz(interpreter, b):
-    print(f"op_ifz called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_ifz called on {b}")
     v = interpreter.stack[-1].pop()
     if isinstance(v.concrete, str):
         z = ConcolicValue.from_const("")
@@ -22,7 +22,7 @@ def op_ifz(interpreter, b):
     return b
 
 def op_if(interpreter, b):
-    print(f"op_if called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_if called on {b}")
     v2 = interpreter.stack[-1].pop()
     v1 = interpreter.stack[-1].pop()
     r = ConcolicValue.compare(v1, b.condition, v2)
@@ -35,7 +35,7 @@ def op_if(interpreter, b):
     return b
 
 def op_get(interpreter, b):
-    print(f"op_get called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_get called on {b}")
     if b.field["name"] == "$assertionsDisabled":
         interpreter.stack[-1].push(ConcolicValue.from_const(False))
     elif  b.static:
@@ -49,19 +49,19 @@ def op_get(interpreter, b):
     return b
 
 def op_load(interpreter, b):
-    print(f"op_load called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_load called on {b}")
     interpreter.stack[-1].load(b.index)
     interpreter.stack[-1].pc += 1
     return b
 
 def op_push(interpreter, b):
-    print(f"op_push called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_push called on {b}")
     interpreter.stack[-1].push(ConcolicValue.from_const(b.value["value"]))
     interpreter.stack[-1].pc += 1
     return b
 
 def op_new(interpreter, b):
-    print(f"op_new called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_new called on {b}")
     if b.dictionary["class"] == "java/lang/AssertionError":
         interpreter.program_return = "AssertionError"
         return None  # Will terminate current execution
@@ -79,19 +79,19 @@ def op_new(interpreter, b):
     return b
 
 def op_dup(interpreter, b):
-    print(f"op_dup called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_dup called on {b}")
     v = interpreter.stack[-1].stack[-1]
     interpreter.stack[-1].stack.append(v)
     interpreter.stack[-1].pc += 1
     return b
 
 def op_nop(interpreter, b):
-    print(f"!!!!!!!!! NOP CALLED ON {b} !!!!!!!!!!")
+    utils.debug_print(interpreter.verbose,f"!!!!!!!!! NOP CALLED ON {b} !!!!!!!!!!")
     interpreter.stack[-1].pc += 1
     return b
 
 def op_store(interpreter, b):
-    print(f"op_store called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_store called on {b}")
 
     v_1 = interpreter.stack[-1].stack.pop()
 
@@ -108,7 +108,7 @@ def op_store(interpreter, b):
     return b
 
 def op_dup_x1(interpreter, b):
-    print(f"op_dup_x1 called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_dup_x1 called on {b}")
     v = interpreter.stack[-1].stack[-1]
     interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-2] + [v] + interpreter.stack[-1].stack[-2:]
     interpreter.stack[-1].pc += 1
@@ -116,14 +116,14 @@ def op_dup_x1(interpreter, b):
 
 
 def op_dup_x2(interpreter, b):
-    print(f"op_dup_x2 called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_dup_x2 called on {b}")
     v = interpreter.stack[-1].stack[-1]
     interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-3] + [v] + interpreter.stack[-1].stack[-3:]
     interpreter.stack[-1].pc += 1
     return b
 
 def op_binary(interpreter, b):
-    print(f"op_binary called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_binary called on {b}")
     v2 = interpreter.stack[-1].pop()
     v1 = interpreter.stack[-1].pop()
     if isinstance(v1.concrete, float) or isinstance(v2.concrete, float):
@@ -144,7 +144,7 @@ def op_binary(interpreter, b):
 
 
 def op_incr(interpreter, b):
-    print(f"op_incr called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_incr called on {b}")
     interpreter.stack[-1].load(b.index)
     v = interpreter.stack[-1].pop()
     interpreter.stack[-1].push(v.binary("add", ConcolicValue.from_const(b.amount)))
@@ -154,12 +154,12 @@ def op_incr(interpreter, b):
     return b
 
 def op_goto(interpreter, b):
-    print(f"op_goto called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_goto called on {b}")
     interpreter.stack[-1].pc = b.target
     return b
 
 def op_array_load(interpreter, b):
-    print(f"op_array_load called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_array_load called on {b}")
     i = interpreter.stack[-1].stack.pop()
     arr_ref = interpreter.stack[-1].stack.pop()
     arr_size = interpreter.memory[f"{arr_ref.concrete}_length"]
@@ -167,7 +167,6 @@ def op_array_load(interpreter, b):
         interpreter.path += [i.symbolic < 0]
         interpreter.program_return = "Negative index access"
         return None
-        #raise Exception("Tried to access negative array index")
     elif i.concrete >= arr_size.concrete:
         interpreter.path += [i.symbolic >= arr_size.symbolic]
         interpreter.program_return = "Out of bounds array load"
@@ -181,7 +180,7 @@ def op_array_load(interpreter, b):
     return b
 
 def op_arraylength(interpreter, b):
-    print(f"op_arraylength called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_arraylength called on {b}")
     arr_ref = interpreter.stack[-1].stack.pop().concrete
 
     #arr_len = len(interpreter.memory[arr_ref])
@@ -191,7 +190,7 @@ def op_arraylength(interpreter, b):
     return b
 
 def op_newarray(interpreter, b):
-    print(f"op_newarray called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_newarray called on {b}")
     # Grab size of array
     size = interpreter.stack[-1].stack.pop()
 
@@ -207,7 +206,7 @@ def op_newarray(interpreter, b):
     return b
 
 def op_array_store(interpreter, b):
-    print(f"op_array_store called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_array_store called on {b}")
     # Note, doesn't handle doubles or longs
     val = interpreter.stack[-1].stack.pop()
     index = interpreter.stack[-1].stack.pop()
@@ -230,7 +229,7 @@ def op_array_store(interpreter, b):
     return b
 
 def op_return(interpreter, b):
-    print(f"op_return called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_return called on {b}")
     if len(interpreter.stack) == 1:
         (l, s, pc, invoker) = interpreter.stack[-1].unpack()
         interpreter.stack.pop()
@@ -257,7 +256,7 @@ def op_return(interpreter, b):
 
 
 def op_invoke(interpreter, b):
-    print(f"op_invoke called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_invoke called on {b}")
 
     # Add objectref at "argument" to function
     if b.access in ["virtual", "interface", "special"]:
@@ -322,7 +321,7 @@ def op_invoke(interpreter, b):
 
 
 def op_put(interpreter, b):
-    print(f"op_put called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_put called on {b}")
     # Don't handle static puts
     if b.static:
         interpreter.op_nop(b)
@@ -337,7 +336,7 @@ def op_put(interpreter, b):
     return b
 
 def op_pop(interpreter, b):
-    print(f"op_pop called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_pop called on {b}")
     n = b.words #b["words"]
     interpreter.stack[-1].stack = interpreter.stack[-1].stack[:-n]
     interpreter.stack[-1].pc += 1
@@ -345,7 +344,7 @@ def op_pop(interpreter, b):
 
 
 def op_cast(interpreter, b):
-    print(f"op_cast called on {b}")
+    utils.debug_print(interpreter.verbose,f"op_cast called on {b}")
     to_type = b.to
     val = interpreter.stack[-1].stack.pop()
     converted_val = val # In case we døn't hændle cånværsion
