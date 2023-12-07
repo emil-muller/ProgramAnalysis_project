@@ -384,8 +384,23 @@ def final_sequence_diagram_concolic(call_traces, call_trace_params, interpreter)
     #    print()
     #plant = [to_plantuml(trace, call_trace_params[i], interpreter)[1:-1] for i, trace in call_traces]
     combined_plant = ["@startuml"] + combine_diagrams(plant, interpreter.prog_returns) + ["@enduml"]
+    combined_plant = removeemptygroup(combined_plant)
     return '\n'.join(compress_plantuml(combined_plant))
 
 def final_sequence_diagram(call_trace, interpreter, prog_returns):
     plant = ["@startuml"] + to_plantuml(call_trace, interpreter)[1:-1] + ["@enduml"]
     return '\n'.join(compress_plantuml(plant))
+
+def removeemptygroup(uml_lst):
+    indices_to_be_deleted = []
+    uml_final = []
+    for n in range(0, len(uml_lst)):
+        if n == uml_lst:
+            break
+        if "group" in uml_lst[n] and "end" in uml_lst[n+1]:
+            indices_to_be_deleted.append(n)
+            indices_to_be_deleted.append(n+1)
+    for n in range(0, len(uml_lst)):
+        if n not in indices_to_be_deleted:
+            uml_final.append(uml_lst[n])
+    return uml_final
