@@ -404,8 +404,3 @@ def removeemptygroup(uml_lst):
         if n not in indices_to_be_deleted:
             uml_final.append(uml_lst[n])
     return uml_final
-
-if __name__ == "__main__":
-    uml_lst = ["start", "group options 0", "end", "group options 1", "dummy", "end" ]
-    test = removeemptygroup(uml_lst)
-    print(test)
